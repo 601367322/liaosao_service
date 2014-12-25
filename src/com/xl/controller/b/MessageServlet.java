@@ -52,7 +52,7 @@ public class MessageServlet {
 			toJo.put(StaticUtil.CONTENT, mb.getContent());
 			toJo.put(StaticUtil.MSGID, "");
 			toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-			session.write(toJo.toString());
+			session.writeAndFlush(toJo.toString()+"\n");
 
 			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			jo.put(StaticUtil.TIME, new Date());
@@ -90,7 +90,7 @@ public class MessageServlet {
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
 				toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
-				session.write(toJo.toString());// 通知对方
+				session.writeAndFlush(toJo.toString()+"\n");// 通知对方
 
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 				jo.put(StaticUtil.OTHERDEVICEID, key);

@@ -51,7 +51,7 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Str
 			for (String deviceId : ids) {
 				if(sessionMap.containsKey(deviceId)){
 					ChannelHandlerContext other=sessionMap.get(deviceId);
-					other.write(jo.toString());
+					other.writeAndFlush(jo.toString()+"\n");
 				}
 			}
 		}
