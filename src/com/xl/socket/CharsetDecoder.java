@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -39,4 +39,4 @@ public class CharsetDecoder extends CumulativeProtocolDecoder {
 		return addr;
 	}
 
-}
+}*/

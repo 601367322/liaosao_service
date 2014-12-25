@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -43,4 +43,4 @@ public class DataDecoderEx extends CumulativeProtocolDecoder {
 		}
 		return false;// 处理成功，让父类进行接收下个包
 	}
-}
+}*/

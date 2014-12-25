@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 
 import org.apache.mina.core.session.IoSession;
@@ -17,4 +17,4 @@ public class CharsetCodecFactory  implements ProtocolCodecFactory {
     public ProtocolEncoder getEncoder(IoSession session) throws Exception {
         return new CharsetEncoder();
     }
-}
+}*/

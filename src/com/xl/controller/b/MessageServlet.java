@@ -1,11 +1,13 @@
 package com.xl.controller.b;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.util.AttributeKey;
+
 import java.util.ArrayList;
 import java.util.Date;
 
 import net.sf.json.JSONObject;
 
-import org.apache.mina.core.session.IoSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -13,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.xl.bean.MessageBean;
-import com.xl.socket.Handler;
+import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
 import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
@@ -41,8 +43,8 @@ public class MessageServlet {
 		MessageBean mb = (MessageBean) JSONObject.toBean(
 				JSONObject.fromObject(content), MessageBean.class);
 		JSONObject jo = new JSONObject();
-		if (Handler.sessionMap.containsKey(mb.getToId())) {
-			IoSession session = Handler.sessionMap.get(mb.getToId());
+		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {
+			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap.get(mb.getToId());
 			JSONObject toJo = new JSONObject();
 			toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
 			toJo.put(StaticUtil.FROMID, mb.getFromId());
@@ -73,17 +75,17 @@ public class MessageServlet {
 	public @ResponseBody
 	Object joinQueue(@RequestParam String deviceId) {
 		JSONObject jo = new JSONObject();
-		if (Handler.sessionMap.containsKey(deviceId)) {
-			if (Handler.queueSessionMap.size() > 0
-					&& !Handler.queueSessionMap.contains(deviceId)) {
+		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
+			if (HttpHelloWorldServerHandler.queueSessionMap.size() > 0
+					&& !HttpHelloWorldServerHandler.queueSessionMap.containsKey(deviceId)) {
 				String key = getKeyByDeviceId(deviceId);
-				IoSession session = Handler.queueSessionMap.get(key);// 得到对方的session
+				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap.get(key);// 得到对方的session
 
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
-				setAttribute(Handler.sessionMap.get(deviceId), key);
+				setAttribute(HttpHelloWorldServerHandler.sessionMap.get(deviceId), key);
 
-				Handler.queueSessionMap.remove(key);
+				HttpHelloWorldServerHandler.queueSessionMap.remove(key);
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
@@ -93,8 +95,8 @@ public class MessageServlet {
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
-				Handler.queueSessionMap.put(deviceId,
-						Handler.sessionMap.get(deviceId));
+				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
+						HttpHelloWorldServerHandler.sessionMap.get(deviceId));
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			}
 		} else {
@@ -110,19 +112,19 @@ public class MessageServlet {
 		return null;
 	}
 
-	public void setAttribute(IoSession session, String deviceId) {
+	public void setAttribute(ChannelHandlerContext session, String deviceId) {
 		ArrayList<String> ids = new ArrayList<String>();
-		if (session.containsAttribute(StaticUtil.IDS)) {
-			ids = (ArrayList<String>) session.getAttribute(StaticUtil.IDS);
+		if (session.attr(AttributeKey.valueOf(StaticUtil.IDS)).get()!=null) {
+			ids = (ArrayList<String>) session.attr(AttributeKey.valueOf(StaticUtil.IDS)).get();
 		}
 		ids.remove(deviceId);
 		ids.add(deviceId);
 	}
 
 	public String getKeyByDeviceId(String deviceId) {
-		int radom = (int) (Math.random() * Handler.queueSessionMap.size());
-		String key = Handler.queueSessionMap.keySet().toArray(
-				new String[Handler.queueSessionMap.size()])[radom];
+		int radom = (int) (Math.random() * HttpHelloWorldServerHandler.queueSessionMap.size());
+		String key = HttpHelloWorldServerHandler.queueSessionMap.keySet().toArray(
+				new String[HttpHelloWorldServerHandler.queueSessionMap.size()])[radom];
 
 		if (key.equals(deviceId)) {
 			return getKeyByDeviceId(deviceId);

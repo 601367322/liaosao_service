@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import java.nio.charset.Charset;
 
@@ -22,4 +22,4 @@ public class CharsetEncoder implements ProtocolEncoder {
         buff.flip();
         out.write(buff);
     }
-}
+}*/

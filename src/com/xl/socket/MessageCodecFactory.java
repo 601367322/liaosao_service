@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
@@ -25,3 +25,4 @@ public class MessageCodecFactory implements ProtocolCodecFactory {
 	}
 
 }
+*/

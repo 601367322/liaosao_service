@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import java.nio.charset.Charset;
 
@@ -9,14 +9,14 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
 public class DataEncoderEx extends ProtocolEncoderAdapter {
 
-	/*
+	
 	 * (non-Javadoc)
 	 * 
 	 * @see
 	 * org.apache.mina.filter.codec.ProtocolEncoder#encode(org.apache.mina.core
 	 * .session.IoSession, java.lang.Object,
 	 * org.apache.mina.filter.codec.ProtocolEncoderOutput)
-	 */
+	 
 	public void encode(IoSession session, Object message,
 			ProtocolEncoderOutput out) throws Exception {
 		System.out.println(message);
@@ -28,4 +28,4 @@ public class DataEncoderEx extends ProtocolEncoderAdapter {
 		out.write(buf);
 	}
 
-}
+}*/

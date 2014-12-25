@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.keepalive.KeepAliveMessageFactory;
@@ -31,4 +31,4 @@ public class KeepAlive implements KeepAliveMessageFactory {
 		return HEARTBEATRESPONSE;
 	}
 
-}
+}*/

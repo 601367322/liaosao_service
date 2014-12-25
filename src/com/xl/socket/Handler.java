@@ -1,4 +1,4 @@
-package com.xl.socket;
+/*package com.xl.socket;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -80,3 +80,4 @@ public class Handler extends IoHandlerAdapter {
 		super.sessionOpened(session);
 	}
 }
+*/
