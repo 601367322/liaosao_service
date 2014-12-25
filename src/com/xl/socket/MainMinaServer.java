@@ -12,38 +12,6 @@ public class MainMinaServer {
 	private static final int HEARTBEATRATE = 15;
 
 	public void init() {
-		/*try {
-			IoAcceptor acceptor = new NioSocketAcceptor();
-
-			acceptor.getFilterChain().addLast("logger", new LoggingFilter());
-//			acceptor.getFilterChain().addLast(
-//					"codec",
-//					new ProtocolCodecFilter(new CharsetCodecFactory()));
-			
-			acceptor.getFilterChain().addLast(
-			"codec",
-			new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
-
-			KeepAliveMessageFactory heartBeatFactory = new KeepAlive();
-
-			KeepAliveFilter heartBeat = new KeepAliveFilter(heartBeatFactory,
-					IdleStatus.BOTH_IDLE);
-
-			heartBeat.setForwardEvent(true);
-			heartBeat.setRequestInterval(HEARTBEATRATE);
-
-			acceptor.getFilterChain().addLast("KeepAlive", heartBeat);
-
-			acceptor.setHandler(new Handler());
-
-			acceptor.getSessionConfig().setReadBufferSize(BUF_SIZE);
-			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
-
-			acceptor.bind(new InetSocketAddress(PORT));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}*/
-		
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
