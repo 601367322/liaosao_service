@@ -104,12 +104,47 @@ public class MessageServlet {
 		}
 		return jo;
 	}
-
-	@RequestMapping(value = "/closeChat", method = { RequestMethod.GET,
-			RequestMethod.POST })
+	
+	/**
+	 * 退出等待聊天列队
+	 * 
+	 * @param deviceId
+	 *            ID
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/exitqueue")
 	public @ResponseBody
-	Object closeChat() {
-		return null;
+	Object exitQueue(@RequestParam String deviceId) {
+		HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
+		JSONObject jo = new JSONObject();
+		jo.put(ResultCode.STATUS, ResultCode.LOADING);
+		return jo;
+	}
+
+	@RequestMapping(value = "/closechat")
+	public @ResponseBody
+	Object closeChat(@RequestParam String deviceId) {
+		JSONObject jo = new JSONObject();
+		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
+			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap.get(deviceId);
+			ArrayList<String> ids=(ArrayList<String>) session.attr(AttributeKey.valueOf(StaticUtil.IDS)).get();
+			if(ids!=null){
+				for (String string : ids) {
+					ChannelHandlerContext temp = HttpHelloWorldServerHandler.sessionMap.get(string);
+					if(temp!=null){
+						JSONObject toJo = new JSONObject();
+						toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CLOSE_CHAT);
+						toJo.put(StaticUtil.DEVICEID, deviceId);
+						temp.writeAndFlush(toJo.toString()+"\n");// 通知对方
+					}
+				}
+			}
+			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+		} else {
+			jo.put(ResultCode.STATUS, ResultCode.FAIL);
+		}
+		return jo;
 	}
 
 	public void setAttribute(ChannelHandlerContext session, String deviceId) {
@@ -119,6 +154,7 @@ public class MessageServlet {
 		}
 		ids.remove(deviceId);
 		ids.add(deviceId);
+		session.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(ids);
 	}
 
 	public String getKeyByDeviceId(String deviceId) {

@@ -8,6 +8,7 @@ public class StaticUtil {
 	public static final String OTHERDEVICEID="other_deviceId";
 	public static final int ORDER_CONNECT_CHAT=1; //找人
 	public static final int ORDER_SENDMESSAGE=2;//发送消息
+	public static final int ORDER_CLOSE_CHAT=3;//退出聊天
 	
 	public static final String TOID="toId";
 	public static final String FROMID="fromId";
