@@ -191,7 +191,8 @@ public class MessageServlet {
 	}
 
 	@RequestMapping(value = "/uploadfile")
-	public Object upload(HttpServletRequest request,@RequestParam("file") MultipartFile file) {
+	public @ResponseBody Object upload(HttpServletRequest request,@RequestParam("file") MultipartFile file) {
+		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
 			String dir = sc.getRealPath("/upload"); // 设定文件保存的目录
@@ -199,13 +200,17 @@ public class MessageServlet {
 			try {
 				FileUtils.writeByteArrayToFile(new File(dir, filename), file
 						.getBytes());
+				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				jo.put(ResultCode.STATUS, ResultCode.FAIL);
 			}
 			System.out.println("upload over. " + filename);
+		}else{
+			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 		}
-		return "/test/success";
+		return jo;
 
 	}
 }
