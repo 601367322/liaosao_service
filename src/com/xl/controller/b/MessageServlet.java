@@ -4,25 +4,27 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
+import org.springframework.util.FileCopyUtils;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.xl.bean.MessageBean;
 import com.xl.socket.HttpHelloWorldServerHandler;
@@ -191,15 +193,34 @@ public class MessageServlet {
 	}
 
 	@RequestMapping(value = "/uploadfile")
-	public @ResponseBody Object upload(HttpServletRequest request,@RequestParam("file") MultipartFile file) {
+	public @ResponseBody
+	Object upload(HttpServletRequest request,
+			@RequestParam("file") MultipartFile file,
+			@RequestParam String deviceId, @RequestParam String toId) {
 		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
-			String dir = sc.getRealPath("/upload"); // 设定文件保存的目录
+			String dir = sc.getRealPath("/upload/" + toId); // 设定文件保存的目录
 			String filename = file.getOriginalFilename(); // 得到上传时的文件名
 			try {
 				FileUtils.writeByteArrayToFile(new File(dir, filename), file
 						.getBytes());
+				ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
+						.get(toId);
+
+				if (session != null) {
+					JSONObject toJo = new JSONObject();
+					toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+					toJo.put(StaticUtil.FROMID, deviceId);
+					toJo.put(StaticUtil.TOID, toId);
+					toJo.put(StaticUtil.CONTENT, filename);
+					toJo.put(StaticUtil.MSGID, "");
+					toJo.put(StaticUtil.MSGTYPE, "1");
+					toJo.put(StaticUtil.TIME, MyUtil.dateFormat
+							.format(new Date()));
+
+					session.writeAndFlush(toJo.toString() + "\n");
+				}
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
@@ -207,10 +228,29 @@ public class MessageServlet {
 				jo.put(ResultCode.STATUS, ResultCode.FAIL);
 			}
 			System.out.println("upload over. " + filename);
-		}else{
+		} else {
 			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 		}
 		return jo;
 
+	}
+
+	@RequestMapping(value = "/download/{deviceId}/{fileName}")
+	public void download(HttpServletRequest request,
+			HttpServletResponse response,
+			@PathVariable("fileName") String fileName,
+			@PathVariable("deviceId") String deviceId) {
+		ServletContext sc = request.getSession().getServletContext();
+		String dir = sc.getRealPath("/upload/" + deviceId);
+		File downloadFile = new File(dir, fileName);
+		response.setContentLength(new Long(downloadFile.length()).intValue());
+		response.setHeader("Content-Disposition", "attachment; filename="
+				+ fileName);
+		try {
+			FileCopyUtils.copy(new FileInputStream(downloadFile), response
+					.getOutputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -15,6 +15,7 @@ public class StaticUtil {
 	public static final String CONTENT="content";
 	public static final String TIME="time";
 	public static final String MSGID="msgId";
+	public static final String MSGTYPE="msgType";
 	
 	public static final String IDS="ids";
 	
