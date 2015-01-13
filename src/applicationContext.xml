@@ -3,14 +3,16 @@
 	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-         http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/task
+	http://www.springframework.org/schema/task/spring-task-3.2.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 
-	<context:property-placeholder location="classpath:/hibernate.properties" />
+	<!--<context:property-placeholder location="classpath:/hibernate.properties" />
 
 	<bean id="sessionFactory"
 		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
@@ -66,8 +68,14 @@
 		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />
 	</aop:config>
 
-	<import resource="com/xl/socket/applicationContext-socket.xml" />
-	<import resource="com/xl/dao/applicationContext-dao.xml" />
-
+	-->
 	
+	<import resource="com/xl/socket/applicationContext-socket.xml" />
+	
+	<!-- task任务扫描注解 -->
+<task:annotation-driven/>
+	<context:component-scan base-package="com.xl.controller"></context:component-scan>
+	
+	<!--<import resource="com/xl/dao/applicationContext-dao.xml" />
+-->
 </beans>

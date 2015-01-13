@@ -23,6 +23,7 @@ public class MessageBean implements Serializable{
 	private String nickName;
 	private String userLogo;
 	private Integer state;
+	private Integer msgType;
 	public MessageBean() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -46,7 +47,15 @@ public class MessageBean implements Serializable{
         this.content = content;
     }
 
-    public MessageBean(String msgId, String userId, String toId, String fromId,
+    public Integer getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(Integer msgType) {
+		this.msgType = msgType;
+	}
+
+	public MessageBean(String msgId, String userId, String toId, String fromId,
 			String content, String time, String nickName, String userLogo,
 			int state) {
 		super();

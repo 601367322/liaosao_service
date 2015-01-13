@@ -1,4 +1,4 @@
-package com.xl.controller.a;
+/*package com.xl.controller.a;
 
 import java.util.Date;
 
@@ -54,3 +54,4 @@ public class LoginServlet {
 		return user;
 	}
 }
+*/

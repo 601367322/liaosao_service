@@ -1,5 +1,6 @@
 package com.xl.socket;
 
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,19 +33,17 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Str
 		}
 	}
    	
-  
-   	@Override
-   	public void disconnect(ChannelHandlerContext session, ChannelPromise promise)
-   			throws Exception {
-   		// TODO Auto-generated method stub
-   		super.disconnect(session, promise);
-   		sessionMap.remove(session.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
+	@Override
+	public void channelInactive(ChannelHandlerContext session) throws Exception {
+		// TODO Auto-generated method stub
+		super.channelInactive(session);
+		sessionMap.remove(session.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
 		queueSessionMap.remove(session.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
 		
 		if(session.attr(AttributeKey.valueOf(StaticUtil.IDS)).get()!=null){
 			
 			JSONObject jo = new JSONObject();
-			jo.put(StaticUtil.ORDER, StaticUtil.OUTLINE_OTHER);
+			jo.put(StaticUtil.ORDER, StaticUtil.ORDER_CLOSE_CHAT);
 			jo.put(StaticUtil.DEVICEID, session.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
 			
 			ArrayList<String> ids = (ArrayList<String>) session.attr(AttributeKey.valueOf(StaticUtil.IDS)).get();
@@ -55,13 +54,5 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Str
 				}
 			}
 		}
-   	}
-   	
-   	@Override
-   	public void exceptionCaught(ChannelHandlerContext session, Throwable cause)
-   			throws Exception {
-   		// TODO Auto-generated method stub
-   		super.exceptionCaught(session, cause);
-   		sessionMap.remove(session.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
-   	}
+	}
 }

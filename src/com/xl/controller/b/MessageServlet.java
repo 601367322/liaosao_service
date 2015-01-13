@@ -64,6 +64,7 @@ public class MessageServlet {
 			toJo.put(StaticUtil.TOID, mb.getToId());
 			toJo.put(StaticUtil.CONTENT, mb.getContent());
 			toJo.put(StaticUtil.MSGID, "");
+			toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
 			toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
 			session.writeAndFlush(toJo.toString() + "\n");
 
@@ -196,7 +197,7 @@ public class MessageServlet {
 	public @ResponseBody
 	Object upload(HttpServletRequest request,
 			@RequestParam("file") MultipartFile file,
-			@RequestParam String deviceId, @RequestParam String toId) {
+			@RequestParam String deviceId, @RequestParam String toId,@RequestParam String msgType) {
 		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
@@ -215,7 +216,7 @@ public class MessageServlet {
 					toJo.put(StaticUtil.TOID, toId);
 					toJo.put(StaticUtil.CONTENT, filename);
 					toJo.put(StaticUtil.MSGID, "");
-					toJo.put(StaticUtil.MSGTYPE, "1");
+					toJo.put(StaticUtil.MSGTYPE, msgType);
 					toJo.put(StaticUtil.TIME, MyUtil.dateFormat
 							.format(new Date()));
 

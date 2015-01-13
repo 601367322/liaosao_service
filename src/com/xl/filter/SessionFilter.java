@@ -21,15 +21,15 @@ import com.xl.util.ResultCode;
 
 public class SessionFilter extends OncePerRequestFilter {
 
-	public UserDao userDao;
+//	public UserDao userDao;
 	
 	@Override
 	protected void initFilterBean() throws ServletException {
 		// TODO Auto-generated method stub
 		super.initFilterBean();
-		WebApplicationContext context = WebApplicationContextUtils
-				.getWebApplicationContext(getServletContext());
-		userDao = (UserDao) context.getBean("userDao");
+//		WebApplicationContext context = WebApplicationContextUtils
+//				.getWebApplicationContext(getServletContext());
+//		userDao = (UserDao) context.getBean("userDao");
 	}
 
 	@Override
