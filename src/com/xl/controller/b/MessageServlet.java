@@ -58,16 +58,25 @@ public class MessageServlet {
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {
 			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 					.get(mb.getToId());
-			JSONObject toJo = new JSONObject();
-			toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
-			toJo.put(StaticUtil.FROMID, mb.getFromId());
-			toJo.put(StaticUtil.TOID, mb.getToId());
-			toJo.put(StaticUtil.CONTENT, mb.getContent());
-			toJo.put(StaticUtil.MSGID, "");
-			toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
-			toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-			session.writeAndFlush(toJo.toString() + "\n");
-
+			if(session==null){
+				jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
+			}else{
+				ArrayList<String> ids = (ArrayList<String>) session.attr(
+						AttributeKey.valueOf(StaticUtil.IDS)).get();
+				if(ids.contains(mb.getFromId())){
+					JSONObject toJo = new JSONObject();
+					toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+					toJo.put(StaticUtil.FROMID, mb.getFromId());
+					toJo.put(StaticUtil.TOID, mb.getToId());
+					toJo.put(StaticUtil.CONTENT, mb.getContent());
+					toJo.put(StaticUtil.MSGID, "");
+					toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
+					toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
+					session.writeAndFlush(toJo.toString() + "\n");
+				}else{
+					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
+				}
+			}
 			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			jo.put(StaticUtil.TIME, new Date());
 		} else {
@@ -96,7 +105,7 @@ public class MessageServlet {
 				String key = getKeyByDeviceId(deviceId);
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
-
+				
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
 				setAttribute(HttpHelloWorldServerHandler.sessionMap
@@ -177,6 +186,10 @@ public class MessageServlet {
 		ids.add(deviceId);
 		session.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(ids);
 	}
+	
+	public void getAttribute(ChannelHandlerContext session, String deviceId){
+		
+	}
 
 	public String getKeyByDeviceId(String deviceId) {
 		int radom = (int) (Math.random() * HttpHelloWorldServerHandler.queueSessionMap
@@ -208,19 +221,26 @@ public class MessageServlet {
 						.getBytes());
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 						.get(toId);
-
-				if (session != null) {
-					JSONObject toJo = new JSONObject();
-					toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
-					toJo.put(StaticUtil.FROMID, deviceId);
-					toJo.put(StaticUtil.TOID, toId);
-					toJo.put(StaticUtil.CONTENT, filename);
-					toJo.put(StaticUtil.MSGID, "");
-					toJo.put(StaticUtil.MSGTYPE, msgType);
-					toJo.put(StaticUtil.TIME, MyUtil.dateFormat
-							.format(new Date()));
-
-					session.writeAndFlush(toJo.toString() + "\n");
+				if(session==null){
+					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
+				}else{
+					ArrayList<String> ids = (ArrayList<String>) session.attr(
+							AttributeKey.valueOf(StaticUtil.IDS)).get();
+					if(ids.contains(deviceId)){
+						JSONObject toJo = new JSONObject();
+						toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+						toJo.put(StaticUtil.FROMID, deviceId);
+						toJo.put(StaticUtil.TOID, toId);
+						toJo.put(StaticUtil.CONTENT, filename);
+						toJo.put(StaticUtil.MSGID, "");
+						toJo.put(StaticUtil.MSGTYPE, msgType);
+						toJo.put(StaticUtil.TIME, MyUtil.dateFormat
+								.format(new Date()));
+	
+						session.writeAndFlush(toJo.toString() + "\n");
+					}else{
+						jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
+					}
 				}
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			} catch (IOException e) {
