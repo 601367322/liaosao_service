@@ -161,11 +161,9 @@ public class MessageServlet {
 				for (String string : ids) {
 					ChannelHandlerContext temp = HttpHelloWorldServerHandler.sessionMap
 							.get(string);
-					ArrayList<String> ids1 = (ArrayList<String>) temp.attr(
-							AttributeKey.valueOf(StaticUtil.IDS)).get();
-					temp.attr(
-							AttributeKey.valueOf(StaticUtil.IDS)).set(null);
 					if (temp != null) {
+						temp.attr(
+								AttributeKey.valueOf(StaticUtil.IDS)).set(null);
 						JSONObject toJo = new JSONObject();
 						toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CLOSE_CHAT);
 						toJo.put(StaticUtil.DEVICEID, deviceId);
