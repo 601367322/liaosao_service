@@ -17,6 +17,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -96,9 +97,23 @@ public class MessageServlet {
 	@RequestMapping(value = "/joinqueue", method = { RequestMethod.GET,
 			RequestMethod.POST })
 	public @ResponseBody
-	Object joinQueue(@RequestParam String deviceId) {
+	Object joinQueue(HttpServletRequest request,@RequestParam String deviceId) {
 		JSONObject jo = new JSONObject();
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
+			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap.get(deviceId);
+			if(request.getParameter("sex")!=null){
+				int sex = Integer.valueOf(request.getParameter("sex").toString());
+				mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
+			}
+			if(request.getParameter("lat")!=null){
+				String lat = request.getParameter("lat").toString();
+				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(lat);
+				String lng = request.getParameter("lng").toString();
+				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(lng);
+			}else{
+				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(null);
+				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(null);
+			}
 			if (HttpHelloWorldServerHandler.queueSessionMap.size() > 0
 					&& !HttpHelloWorldServerHandler.queueSessionMap
 							.containsKey(deviceId)) {
@@ -106,23 +121,28 @@ public class MessageServlet {
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
 				
+				
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
-				setAttribute(HttpHelloWorldServerHandler.sessionMap
-						.get(deviceId), key);
+				setAttribute(mySession, key);
 
 				HttpHelloWorldServerHandler.queueSessionMap.remove(key);
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
+				toJo.put(StaticUtil.SEX,mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
+				toJo.put(StaticUtil.LAT,mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).get());
+				toJo.put(StaticUtil.LNG,mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).get());
 				toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
 				session.writeAndFlush(toJo.toString() + "\n");// 通知对方
 
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+				jo.put(StaticUtil.SEX,session.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
+				jo.put(StaticUtil.LAT,session.attr(AttributeKey.valueOf(StaticUtil.LAT)).get());
+				jo.put(StaticUtil.LNG,session.attr(AttributeKey.valueOf(StaticUtil.LNG)).get());
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
-				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
-						HttpHelloWorldServerHandler.sessionMap.get(deviceId));
+				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,mySession);
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			}
 		} else {
