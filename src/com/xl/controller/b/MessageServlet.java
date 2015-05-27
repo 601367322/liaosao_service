@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.xl.bean.MessageBean;
+import com.xl.bean.UnlineMessage;
+import com.xl.dao.UnlineMessageDao;
+import com.xl.dao.UserDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
 import com.xl.util.MyUtil;
@@ -36,6 +40,9 @@ import com.xl.util.ResultCode;
 @Controller
 @RequestMapping(value = "/b")
 public class MessageServlet {
+	
+	@Resource
+	public UnlineMessageDao unlineMessageDao;
 
 	/**
 	 * 给对方发送消息
@@ -74,6 +81,8 @@ public class MessageServlet {
 					toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
 					toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
 					session.writeAndFlush(toJo.toString() + "\n");
+					
+					unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb.getToId(), toJo.toString()));
 				}else{
 					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
 				}

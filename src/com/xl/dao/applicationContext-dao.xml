@@ -4,7 +4,11 @@
 	xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<!--<bean id="userDao" class="com.xl.dao.UserDao">
+	<bean id="userDao" class="com.xl.dao.UserDao">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
---></beans>
+	
+	<bean id="unlineMessageDao" class="com.xl.dao.UnlineMessageDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+</beans>

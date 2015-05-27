@@ -17,7 +17,7 @@ public class MyTask implements ServletContextAware{
 	private ServletContext sc;
 
 	// @Scheduled(cron = "0 0/10 * * * ? ")// 间隔10分钟执行
-	@Scheduled(cron = "0/5 * * * * ? ")
+	@Scheduled(cron = "0 0/10 * * * ? ")
 	// 间隔10分钟执行
 	public void taskCycle() {
 		String dir = sc.getRealPath("/upload/"); // 设定文件保存的目录

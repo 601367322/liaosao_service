@@ -1,5 +1,5 @@
 #MyEclipse Hibernate Properties
-#Wed Oct 01 16:55:27 CST 2014
+#Wed May 27 11:31:28 CST 2015
 sessionFactoryName=
 genBasicCompId=false
 profile=
@@ -10,7 +10,7 @@ detectM2M=false
 reStrategyClass=
 detectO2O=false
 springDaoFile=
-useJavaTypes=true
+useJavaTypes=false
 keyGenerator=native
 libInstallFolder=<no jars/zips in selected libraries>
 addLibs2Project=true
