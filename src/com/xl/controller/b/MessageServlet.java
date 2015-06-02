@@ -40,7 +40,7 @@ import com.xl.util.ResultCode;
 @Controller
 @RequestMapping(value = "/b")
 public class MessageServlet {
-	
+
 	@Resource
 	public UnlineMessageDao unlineMessageDao;
 
@@ -63,29 +63,35 @@ public class MessageServlet {
 		MessageBean mb = (MessageBean) JSONObject.toBean(JSONObject
 				.fromObject(content), MessageBean.class);
 		JSONObject jo = new JSONObject();
-		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {
+		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {// 查看自己是否连接
 			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
-					.get(mb.getToId());
-			if(session==null){
+					.get(mb.getToId());// 获取对方session
+
+			JSONObject toJo = new JSONObject();
+			toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+			toJo.put(StaticUtil.FROMID, mb.getFromId());
+			toJo.put(StaticUtil.TOID, mb.getToId());
+			toJo.put(StaticUtil.CONTENT, mb.getContent());
+			toJo.put(StaticUtil.MSGID, "");
+			toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
+			toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
+
+			boolean isSend = false;// 是否发送成功
+			if (session == null) {
 				jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
-			}else{
+			} else {
 				ArrayList<String> ids = (ArrayList<String>) session.attr(
 						AttributeKey.valueOf(StaticUtil.IDS)).get();
-				if(ids.contains(mb.getFromId())){
-					JSONObject toJo = new JSONObject();
-					toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
-					toJo.put(StaticUtil.FROMID, mb.getFromId());
-					toJo.put(StaticUtil.TOID, mb.getToId());
-					toJo.put(StaticUtil.CONTENT, mb.getContent());
-					toJo.put(StaticUtil.MSGID, "");
-					toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
-					toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
+				if (ids.contains(mb.getFromId())) {
 					session.writeAndFlush(toJo.toString() + "\n");
-					
-					unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb.getToId(), toJo.toString()));
-				}else{
+					isSend = true;
+				} else {
 					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
 				}
+			}
+			if (!isSend) {// 如果为发送成功
+				unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb
+						.getToId(), toJo.toString()));
 			}
 			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			jo.put(StaticUtil.TIME, new Date());
@@ -106,20 +112,22 @@ public class MessageServlet {
 	@RequestMapping(value = "/joinqueue", method = { RequestMethod.GET,
 			RequestMethod.POST })
 	public @ResponseBody
-	Object joinQueue(HttpServletRequest request,@RequestParam String deviceId) {
+	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId) {
 		JSONObject jo = new JSONObject();
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
-			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap.get(deviceId);
-			if(request.getParameter("sex")!=null){
-				int sex = Integer.valueOf(request.getParameter("sex").toString());
+			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
+					.get(deviceId);
+			if (request.getParameter("sex") != null) {
+				int sex = Integer.valueOf(request.getParameter("sex")
+						.toString());
 				mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
 			}
-			if(request.getParameter("lat")!=null){
+			if (request.getParameter("lat") != null) {
 				String lat = request.getParameter("lat").toString();
 				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(lat);
 				String lng = request.getParameter("lng").toString();
 				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(lng);
-			}else{
+			} else {
 				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(null);
 				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(null);
 			}
@@ -129,8 +137,7 @@ public class MessageServlet {
 				String key = getKeyByDeviceId(deviceId);
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
-				
-				
+
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
 				setAttribute(mySession, key);
@@ -139,19 +146,26 @@ public class MessageServlet {
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
-				toJo.put(StaticUtil.SEX,mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
-				toJo.put(StaticUtil.LAT,mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).get());
-				toJo.put(StaticUtil.LNG,mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).get());
+				toJo.put(StaticUtil.SEX, mySession.attr(
+						AttributeKey.valueOf(StaticUtil.SEX)).get());
+				toJo.put(StaticUtil.LAT, mySession.attr(
+						AttributeKey.valueOf(StaticUtil.LAT)).get());
+				toJo.put(StaticUtil.LNG, mySession.attr(
+						AttributeKey.valueOf(StaticUtil.LNG)).get());
 				toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
 				session.writeAndFlush(toJo.toString() + "\n");// 通知对方
 
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-				jo.put(StaticUtil.SEX,session.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
-				jo.put(StaticUtil.LAT,session.attr(AttributeKey.valueOf(StaticUtil.LAT)).get());
-				jo.put(StaticUtil.LNG,session.attr(AttributeKey.valueOf(StaticUtil.LNG)).get());
+				jo.put(StaticUtil.SEX, session.attr(
+						AttributeKey.valueOf(StaticUtil.SEX)).get());
+				jo.put(StaticUtil.LAT, session.attr(
+						AttributeKey.valueOf(StaticUtil.LAT)).get());
+				jo.put(StaticUtil.LNG, session.attr(
+						AttributeKey.valueOf(StaticUtil.LNG)).get());
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
-				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,mySession);
+				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
+						mySession);
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			}
 		} else {
@@ -191,8 +205,8 @@ public class MessageServlet {
 					ChannelHandlerContext temp = HttpHelloWorldServerHandler.sessionMap
 							.get(string);
 					if (temp != null) {
-						temp.attr(
-								AttributeKey.valueOf(StaticUtil.IDS)).set(null);
+						temp.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(
+								null);
 						JSONObject toJo = new JSONObject();
 						toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CLOSE_CHAT);
 						toJo.put(StaticUtil.DEVICEID, deviceId);
@@ -218,9 +232,9 @@ public class MessageServlet {
 		ids.add(deviceId);
 		session.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(ids);
 	}
-	
-	public void getAttribute(ChannelHandlerContext session, String deviceId){
-		
+
+	public void getAttribute(ChannelHandlerContext session, String deviceId) {
+
 	}
 
 	public String getKeyByDeviceId(String deviceId) {
@@ -242,7 +256,8 @@ public class MessageServlet {
 	public @ResponseBody
 	Object upload(HttpServletRequest request,
 			@RequestParam("file") MultipartFile file,
-			@RequestParam String deviceId, @RequestParam String toId,@RequestParam String msgType) {
+			@RequestParam String deviceId, @RequestParam String toId,
+			@RequestParam String msgType) {
 		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
@@ -253,26 +268,32 @@ public class MessageServlet {
 						.getBytes());
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 						.get(toId);
-				if(session==null){
+
+				JSONObject toJo = new JSONObject();
+				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+				toJo.put(StaticUtil.FROMID, deviceId);
+				toJo.put(StaticUtil.TOID, toId);
+				toJo.put(StaticUtil.CONTENT, filename);
+				toJo.put(StaticUtil.MSGID, "");
+				toJo.put(StaticUtil.MSGTYPE, msgType);
+				toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
+
+				boolean isSend = false;// 是否发送成功
+				if (session == null) {
 					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
-				}else{
+				} else {
 					ArrayList<String> ids = (ArrayList<String>) session.attr(
 							AttributeKey.valueOf(StaticUtil.IDS)).get();
-					if(ids.contains(deviceId)){
-						JSONObject toJo = new JSONObject();
-						toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
-						toJo.put(StaticUtil.FROMID, deviceId);
-						toJo.put(StaticUtil.TOID, toId);
-						toJo.put(StaticUtil.CONTENT, filename);
-						toJo.put(StaticUtil.MSGID, "");
-						toJo.put(StaticUtil.MSGTYPE, msgType);
-						toJo.put(StaticUtil.TIME, MyUtil.dateFormat
-								.format(new Date()));
-	
+					if (ids.contains(deviceId)) {
 						session.writeAndFlush(toJo.toString() + "\n");
-					}else{
+						isSend = true;
+					} else {
 						jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
 					}
+				}
+				if (!isSend) {// 如果为发送成功
+					unlineMessageDao.save(new UnlineMessage(deviceId, toId,
+							toJo.toString()));
 				}
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 			} catch (IOException e) {
