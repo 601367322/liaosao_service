@@ -63,41 +63,28 @@ public class MessageServlet {
 		MessageBean mb = (MessageBean) JSONObject.toBean(JSONObject
 				.fromObject(content), MessageBean.class);
 		JSONObject jo = new JSONObject();
-		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {// 查看自己是否连接
+		JSONObject toJo = new JSONObject();
+		toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
+		toJo.put(StaticUtil.FROMID, mb.getFromId());
+		toJo.put(StaticUtil.TOID, mb.getToId());
+		toJo.put(StaticUtil.CONTENT, mb.getContent());
+		toJo.put(StaticUtil.MSGID, "");
+		toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
+		toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
+		
+		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {// 查看对方是否连接
+			
 			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 					.get(mb.getToId());// 获取对方session
-
-			JSONObject toJo = new JSONObject();
-			toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
-			toJo.put(StaticUtil.FROMID, mb.getFromId());
-			toJo.put(StaticUtil.TOID, mb.getToId());
-			toJo.put(StaticUtil.CONTENT, mb.getContent());
-			toJo.put(StaticUtil.MSGID, "");
-			toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
-			toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-
-			boolean isSend = false;// 是否发送成功
-			if (session == null) {
-				jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
-			} else {
-				ArrayList<String> ids = (ArrayList<String>) session.attr(
-						AttributeKey.valueOf(StaticUtil.IDS)).get();
-				if (ids.contains(mb.getFromId())) {
-					session.writeAndFlush(toJo.toString() + "\n");
-					isSend = true;
-				} else {
-					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
-				}
-			}
-			if (!isSend) {// 如果为发送成功
-				unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb
-						.getToId(), toJo.toString()));
-			}
-			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-			jo.put(StaticUtil.TIME, new Date());
+			
+			session.writeAndFlush(toJo.toString() + "\n");
+			
 		} else {
-			jo.put(ResultCode.STATUS, ResultCode.FAIL);
+			unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb
+					.getToId(), toJo.toString()));
 		}
+		jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+		jo.put(StaticUtil.TIME, new Date());
 		return jo;
 	}
 
@@ -266,9 +253,8 @@ public class MessageServlet {
 			try {
 				FileUtils.writeByteArrayToFile(new File(dir, filename), file
 						.getBytes());
-				ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
-						.get(toId);
 
+				////////////////
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
 				toJo.put(StaticUtil.FROMID, deviceId);
@@ -277,25 +263,20 @@ public class MessageServlet {
 				toJo.put(StaticUtil.MSGID, "");
 				toJo.put(StaticUtil.MSGTYPE, msgType);
 				toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-
-				boolean isSend = false;// 是否发送成功
-				if (session == null) {
-					jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
+				
+				if (HttpHelloWorldServerHandler.sessionMap.containsKey(toId)) {// 查看对方是否连接
+					
+					ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
+							.get(toId);// 获取对方session
+					
+					session.writeAndFlush(toJo.toString() + "\n");
+					
 				} else {
-					ArrayList<String> ids = (ArrayList<String>) session.attr(
-							AttributeKey.valueOf(StaticUtil.IDS)).get();
-					if (ids.contains(deviceId)) {
-						session.writeAndFlush(toJo.toString() + "\n");
-						isSend = true;
-					} else {
-						jo.put(ResultCode.INFO, ResultCode.DISCONNECT);
-					}
-				}
-				if (!isSend) {// 如果为发送成功
-					unlineMessageDao.save(new UnlineMessage(deviceId, toId,
-							toJo.toString()));
+					unlineMessageDao.save(new UnlineMessage(deviceId, toId, toJo.toString()));
 				}
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+				jo.put(StaticUtil.TIME, new Date());
+				return jo;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
