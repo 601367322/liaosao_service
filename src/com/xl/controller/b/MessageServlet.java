@@ -5,15 +5,18 @@ import io.netty.util.AttributeKey;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.FileUtils;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sun.istack.internal.Nullable;
 import com.xl.bean.MessageBean;
 import com.xl.bean.UnlineMessage;
 import com.xl.dao.UnlineMessageDao;
@@ -58,10 +62,12 @@ public class MessageServlet {
 	@RequestMapping(value = "/sendmessage", method = { RequestMethod.GET,
 			RequestMethod.POST })
 	public @ResponseBody
-	Object sendMessage(@RequestParam String content) {
+	Object sendMessage(@RequestParam String content,
+			@RequestParam(required = false) String deviceId,
+			@RequestParam(required = false) Integer sex) {
 		System.out.println(content.toString());
-		MessageBean mb = (MessageBean) JSONObject.toBean(JSONObject
-				.fromObject(content), MessageBean.class);
+		MessageBean mb = (MessageBean) JSONObject.toBean(
+				JSONObject.fromObject(content), MessageBean.class);
 		JSONObject jo = new JSONObject();
 		JSONObject toJo = new JSONObject();
 		toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
@@ -71,14 +77,15 @@ public class MessageServlet {
 		toJo.put(StaticUtil.MSGID, "");
 		toJo.put(StaticUtil.MSGTYPE, mb.getMsgType());
 		toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-		
+		toJo.put(StaticUtil.SEX, sex);
+
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(mb.getToId())) {// 查看对方是否连接
-			
+
 			ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 					.get(mb.getToId());// 获取对方session
-			
+
 			session.writeAndFlush(toJo.toString() + "\n");
-			
+
 		} else {
 			unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb
 					.getToId(), toJo.toString()));
@@ -99,29 +106,18 @@ public class MessageServlet {
 	@RequestMapping(value = "/joinqueue", method = { RequestMethod.GET,
 			RequestMethod.POST })
 	public @ResponseBody
-	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId) {
+	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
+			@RequestParam(required = false) Integer sex) {
 		JSONObject jo = new JSONObject();
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
 			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
 					.get(deviceId);
-			if (request.getParameter("sex") != null) {
-				int sex = Integer.valueOf(request.getParameter("sex")
-						.toString());
-				mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
-			}
-			if (request.getParameter("lat") != null) {
-				String lat = request.getParameter("lat").toString();
-				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(lat);
-				String lng = request.getParameter("lng").toString();
-				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(lng);
-			} else {
-				mySession.attr(AttributeKey.valueOf(StaticUtil.LAT)).set(null);
-				mySession.attr(AttributeKey.valueOf(StaticUtil.LNG)).set(null);
-			}
+			mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
 			if (HttpHelloWorldServerHandler.queueSessionMap.size() > 0
 					&& !HttpHelloWorldServerHandler.queueSessionMap
 							.containsKey(deviceId)) {
-				String key = getKeyByDeviceId(deviceId);
+
+				String key = getKeyByDeviceId(deviceId);// 随机抽取聊天对象
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
 
@@ -129,26 +125,20 @@ public class MessageServlet {
 				setAttribute(session, deviceId);
 				setAttribute(mySession, key);
 
-				HttpHelloWorldServerHandler.queueSessionMap.remove(key);
+				HttpHelloWorldServerHandler.queueSessionMap.remove(key);// 从队列中移除
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
-				toJo.put(StaticUtil.SEX, mySession.attr(
-						AttributeKey.valueOf(StaticUtil.SEX)).get());
-				toJo.put(StaticUtil.LAT, mySession.attr(
-						AttributeKey.valueOf(StaticUtil.LAT)).get());
-				toJo.put(StaticUtil.LNG, mySession.attr(
-						AttributeKey.valueOf(StaticUtil.LNG)).get());
+				toJo.put(StaticUtil.SEX,
+						mySession.attr(AttributeKey.valueOf(StaticUtil.SEX))
+								.get());
 				toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
 				session.writeAndFlush(toJo.toString() + "\n");// 通知对方
 
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-				jo.put(StaticUtil.SEX, session.attr(
-						AttributeKey.valueOf(StaticUtil.SEX)).get());
-				jo.put(StaticUtil.LAT, session.attr(
-						AttributeKey.valueOf(StaticUtil.LAT)).get());
-				jo.put(StaticUtil.LNG, session.attr(
-						AttributeKey.valueOf(StaticUtil.LNG)).get());
+				jo.put(StaticUtil.SEX,
+						session.attr(AttributeKey.valueOf(StaticUtil.SEX))
+								.get());
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
 				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
@@ -244,17 +234,19 @@ public class MessageServlet {
 	Object upload(HttpServletRequest request,
 			@RequestParam("file") MultipartFile file,
 			@RequestParam String deviceId, @RequestParam String toId,
-			@RequestParam String msgType) {
+			@RequestParam String msgType,
+			@RequestParam(required = false) Integer sex,
+			@RequestParam(required = false) Integer voiceTime) {
 		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
 			String dir = sc.getRealPath("/upload/" + toId); // 设定文件保存的目录
 			String filename = file.getOriginalFilename(); // 得到上传时的文件名
 			try {
-				FileUtils.writeByteArrayToFile(new File(dir, filename), file
-						.getBytes());
+				FileUtils.writeByteArrayToFile(new File(dir, filename),
+						file.getBytes());
 
-				////////////////
+				// //////////////
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
 				toJo.put(StaticUtil.FROMID, deviceId);
@@ -263,16 +255,19 @@ public class MessageServlet {
 				toJo.put(StaticUtil.MSGID, "");
 				toJo.put(StaticUtil.MSGTYPE, msgType);
 				toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-				
+				toJo.put(StaticUtil.VOICETIME, voiceTime);
+				toJo.put(StaticUtil.SEX, sex);
+
 				if (HttpHelloWorldServerHandler.sessionMap.containsKey(toId)) {// 查看对方是否连接
-					
+
 					ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
 							.get(toId);// 获取对方session
-					
+
 					session.writeAndFlush(toJo.toString() + "\n");
-					
+
 				} else {
-					unlineMessageDao.save(new UnlineMessage(deviceId, toId, toJo.toString()));
+					unlineMessageDao.save(new UnlineMessage(deviceId, toId,
+							toJo.toString()));
 				}
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 				jo.put(StaticUtil.TIME, new Date());
@@ -294,18 +289,27 @@ public class MessageServlet {
 	public void download(HttpServletRequest request,
 			HttpServletResponse response,
 			@PathVariable("fileName") String fileName,
-			@PathVariable("deviceId") String deviceId) {
+			@PathVariable("deviceId") String deviceId)
+			throws FileNotFoundException, IOException {
 		ServletContext sc = request.getSession().getServletContext();
 		String dir = sc.getRealPath("/upload/" + deviceId);
 		File downloadFile = new File(dir, fileName);
 		response.setContentLength(new Long(downloadFile.length()).intValue());
 		response.setHeader("Content-Disposition", "attachment; filename="
 				+ fileName);
-		try {
-			FileCopyUtils.copy(new FileInputStream(downloadFile), response
-					.getOutputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		FileCopyUtils.copy(new FileInputStream(downloadFile),
+				response.getOutputStream());
+	}
+
+	@RequestMapping(value = "/getallmessage")
+	public @ResponseBody
+	Object getAllMyMessage(@RequestParam String deviceId) {
+		JSONObject jo = new JSONObject();
+		List<UnlineMessage> list = unlineMessageDao
+				.getMyUnlineMessage(deviceId);
+		unlineMessageDao.deleteAll(list);
+		jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+		jo.put(StaticUtil.CONTENT, JSONArray.fromObject(list));
+		return jo;
 	}
 }
