@@ -109,6 +109,7 @@ public class MessageServlet {
 	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
 			@RequestParam(required = false) Integer sex) {
 		JSONObject jo = new JSONObject();
+		System.out.println(deviceId);
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
 			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
 					.get(deviceId);

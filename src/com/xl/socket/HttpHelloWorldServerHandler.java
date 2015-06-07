@@ -29,6 +29,7 @@ public class HttpHelloWorldServerHandler extends SimpleChannelInboundHandler<Str
 		case StaticUtil.ORDER_CONNECT:
 			ctx.attr(AttributeKey.valueOf(StaticUtil.DEVICEID)).set(jo.getString(StaticUtil.DEVICEID));
 			sessionMap.put(jo.getString(StaticUtil.DEVICEID), ctx);
+			System.out.println("sessionMap.put");
 			break;
 		}
 	}
