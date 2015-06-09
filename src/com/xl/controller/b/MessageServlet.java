@@ -109,18 +109,25 @@ public class MessageServlet {
 	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
 			@RequestParam(required = false) Integer sex) {
 		JSONObject jo = new JSONObject();
+		System.out.println("joinQueue\t"
+				+ deviceId);
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
+			System.out.println("containsKey\t"
+					+ deviceId);
 			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
 					.get(deviceId);
 			mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
 			if (HttpHelloWorldServerHandler.queueSessionMap.size() > 0
 					&& !HttpHelloWorldServerHandler.queueSessionMap
 							.containsKey(deviceId)) {
-
+				
 				String key = getKeyByDeviceId(deviceId);// 随机抽取聊天对象
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
 
+				System.out.println("queueSessionMap\tcontainsKey\t"
+						+ key);
+				
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
 				setAttribute(mySession, key);
@@ -141,11 +148,15 @@ public class MessageServlet {
 								.get());
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
+				System.out.println("queueSessionMap\tunContainsKey\t"
+						+ deviceId);
 				HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
 						mySession);
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			}
 		} else {
+			System.out.println("unContainsKey\t"
+					+ jo.getString(StaticUtil.DEVICEID));
 			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 		}
 		return jo;
