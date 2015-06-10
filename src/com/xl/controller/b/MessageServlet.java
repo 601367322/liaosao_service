@@ -66,8 +66,8 @@ public class MessageServlet {
 			@RequestParam(required = false) String deviceId,
 			@RequestParam(required = false) Integer sex) {
 		System.out.println(content.toString());
-		MessageBean mb = (MessageBean) JSONObject.toBean(
-				JSONObject.fromObject(content), MessageBean.class);
+		MessageBean mb = (MessageBean) JSONObject.toBean(JSONObject
+				.fromObject(content), MessageBean.class);
 		JSONObject jo = new JSONObject();
 		JSONObject toJo = new JSONObject();
 		toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
@@ -109,25 +109,22 @@ public class MessageServlet {
 	Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
 			@RequestParam(required = false) Integer sex) {
 		JSONObject jo = new JSONObject();
-		System.out.println("joinQueue\t"
-				+ deviceId);
+		System.out.println("joinQueue\t" + deviceId);
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
-			System.out.println("containsKey\t"
-					+ deviceId);
+			System.out.println("containsKey\t" + deviceId);
 			ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
 					.get(deviceId);
 			mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
 			if (HttpHelloWorldServerHandler.queueSessionMap.size() > 0
 					&& !HttpHelloWorldServerHandler.queueSessionMap
 							.containsKey(deviceId)) {
-				
+
 				String key = getKeyByDeviceId(deviceId);// 随机抽取聊天对象
 				ChannelHandlerContext session = HttpHelloWorldServerHandler.queueSessionMap
 						.get(key);// 得到对方的session
 
-				System.out.println("queueSessionMap\tcontainsKey\t"
-						+ key);
-				
+				System.out.println("queueSessionMap\tcontainsKey\t" + key);
+
 				/** 将id添加到各自的session中 **/
 				setAttribute(session, deviceId);
 				setAttribute(mySession, key);
@@ -136,16 +133,14 @@ public class MessageServlet {
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
-				toJo.put(StaticUtil.SEX,
-						mySession.attr(AttributeKey.valueOf(StaticUtil.SEX))
-								.get());
+				toJo.put(StaticUtil.SEX, mySession.attr(
+						AttributeKey.valueOf(StaticUtil.SEX)).get());
 				toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
 				session.writeAndFlush(toJo.toString() + "\n");// 通知对方
 
 				jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-				jo.put(StaticUtil.SEX,
-						session.attr(AttributeKey.valueOf(StaticUtil.SEX))
-								.get());
+				jo.put(StaticUtil.SEX, session.attr(
+						AttributeKey.valueOf(StaticUtil.SEX)).get());
 				jo.put(StaticUtil.OTHERDEVICEID, key);
 			} else {
 				System.out.println("queueSessionMap\tunContainsKey\t"
@@ -155,8 +150,7 @@ public class MessageServlet {
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			}
 		} else {
-			System.out.println("unContainsKey\t"
-					+ jo.getString(StaticUtil.DEVICEID));
+			System.out.println("unContainsKey\t" + deviceId);
 			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 		}
 		return jo;
@@ -173,6 +167,7 @@ public class MessageServlet {
 	@RequestMapping(value = "/exitqueue")
 	public @ResponseBody
 	Object exitQueue(@RequestParam String deviceId) {
+		System.out.println("exitQueue" + deviceId);
 		HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
 		JSONObject jo = new JSONObject();
 		jo.put(ResultCode.STATUS, ResultCode.LOADING);
@@ -254,8 +249,8 @@ public class MessageServlet {
 			String dir = sc.getRealPath("/upload/" + toId); // 设定文件保存的目录
 			String filename = file.getOriginalFilename(); // 得到上传时的文件名
 			try {
-				FileUtils.writeByteArrayToFile(new File(dir, filename),
-						file.getBytes());
+				FileUtils.writeByteArrayToFile(new File(dir, filename), file
+						.getBytes());
 
 				// //////////////
 				JSONObject toJo = new JSONObject();
@@ -308,8 +303,8 @@ public class MessageServlet {
 		response.setContentLength(new Long(downloadFile.length()).intValue());
 		response.setHeader("Content-Disposition", "attachment; filename="
 				+ fileName);
-		FileCopyUtils.copy(new FileInputStream(downloadFile),
-				response.getOutputStream());
+		FileCopyUtils.copy(new FileInputStream(downloadFile), response
+				.getOutputStream());
 	}
 
 	@RequestMapping(value = "/getallmessage")

@@ -40,6 +40,8 @@ public class HttpHelloWorldServerHandler extends
 	public void channelInactive(ChannelHandlerContext session) throws Exception {
 		// TODO Auto-generated method stub
 		super.channelInactive(session);
+		System.out.println("channelInactive\t"+session.attr(
+				AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
 		sessionMap.remove(session.attr(
 				AttributeKey.valueOf(StaticUtil.DEVICEID)).get());
 		queueSessionMap.remove(session.attr(
