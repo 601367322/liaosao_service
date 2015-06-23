@@ -9,4 +9,5 @@ public class ResultCode {
 	public static final int FAIL = -1;
 	public static final int DISCONNECT = -2;
 	public static final int SAVED = -3;
+	public static final int NOVIP = -4;
 }

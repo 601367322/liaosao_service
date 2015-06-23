@@ -20,6 +20,7 @@ public class StaticUtil {
 
 	public static final String IDS = "ids";
 	public static final String SEX = "sex";
+	public static final String WANTSEX = "wantsex";
 	public static final String LNG = "lng";
 	public static final String LAT = "lat";
 

@@ -8,6 +8,10 @@ public class BaseDao extends HibernateDaoSupport{
 		return getHibernateTemplate().save(obj);
 	}
 	
+	public void saveOrUpdate(Object obj){
+		getHibernateTemplate().saveOrUpdate(obj);
+	}
+	
 	public void update(Object obj){
 		getHibernateTemplate().update(obj);
 	}
