@@ -13,8 +13,11 @@
         <property name="deviceId" type="java.lang.String">
             <column name="deviceId" not-null="true" unique="true" />
         </property>
-        <property name="time" type="java.lang.Long">
-            <column name="time" not-null="true" />
+        <property name="createTime" type="java.lang.Long">
+            <column name="create_time" not-null="true" />
+        </property>
+        <property name="endTime" type="java.lang.Long">
+            <column name="end_time" not-null="true" />
         </property>
     </class>
 </hibernate-mapping>

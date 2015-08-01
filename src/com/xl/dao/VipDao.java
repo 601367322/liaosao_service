@@ -12,9 +12,8 @@ public class VipDao extends BaseDao {
 		List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
 				"From Vip v where v.deviceId = '"
 						+ deviceId
-						+ "' and v.time > "
-						+ Long.valueOf((new Date().getTime() - (30l * 24l * 60l
-								* 60l * 1000l))));
+						+ "' and v.endTime > "
+						+ new Date().getTime());
 		if (list.size() > 0) {
 			return list.get(0);
 		} else {

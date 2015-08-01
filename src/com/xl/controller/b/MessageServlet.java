@@ -36,12 +36,15 @@ import org.springframework.web.multipart.MultipartFile;
 import com.sun.istack.internal.Nullable;
 import com.xl.bean.MessageBean;
 import com.xl.bean.UnlineMessage;
+import com.xl.bean.UserBean;
+import com.xl.bean.UserTable;
 import com.xl.bean.Vip;
 import com.xl.dao.UnlineMessageDao;
 import com.xl.dao.UserDao;
 import com.xl.dao.VipDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
+import com.xl.util.DefaultDefaultValueProcessor;
 import com.xl.util.MD5;
 import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
@@ -54,6 +57,8 @@ public class MessageServlet {
 	public UnlineMessageDao unlineMessageDao;
 	@Resource
 	public VipDao vipDao;
+	@Resource
+	public UserDao userDao;
 
 	/**
 	 * 给对方发送消息
@@ -117,10 +122,10 @@ public class MessageServlet {
 			@RequestParam(required = false) Integer sex) {
 		JSONObject jo = new JSONObject();
 		System.out.println("joinQueue\t" + deviceId);
-		
+
 		HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
 		HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
-		
+
 		if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
 			System.out.println("containsKey\t" + deviceId);
 
@@ -169,14 +174,17 @@ public class MessageServlet {
 						mySession);
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			} else {
-				System.out.println("queueSessionMap\tcontainsKey\t" + otherDeviceId);
+				System.out.println("queueSessionMap\tcontainsKey\t"
+						+ otherDeviceId);
 
 				/** 将id添加到各自的session中 **/
 				setAttribute(otherSession, deviceId);
 				setAttribute(mySession, otherDeviceId);
 
-				HttpHelloWorldServerHandler.queueSessionMap.remove(otherDeviceId);// 从队列中移除
-				HttpHelloWorldServerHandler.queueSessionMapVip.remove(otherDeviceId);// 从队列中移除
+				HttpHelloWorldServerHandler.queueSessionMap
+						.remove(otherDeviceId);// 从队列中移除
+				HttpHelloWorldServerHandler.queueSessionMapVip
+						.remove(otherDeviceId);// 从队列中移除
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
@@ -217,10 +225,10 @@ public class MessageServlet {
 		JSONObject jo = new JSONObject();
 		System.out.println("joinQueue\t" + deviceId);
 		System.out.println(getmd5DeviceId(deviceId));
-		
+
 		HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
 		HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
-		
+
 		Vip vip = vipDao.getVipByDeviceId(getmd5DeviceId(deviceId));
 		if (vip == null) {
 			jo.put(ResultCode.STATUS, ResultCode.NOVIP);
@@ -279,14 +287,17 @@ public class MessageServlet {
 						mySession);
 				jo.put(ResultCode.STATUS, ResultCode.LOADING);
 			} else {
-				System.out.println("queueSessionMap\tcontainsKey\t" + otherDeviceId);
+				System.out.println("queueSessionMap\tcontainsKey\t"
+						+ otherDeviceId);
 
 				/** 将id添加到各自的session中 **/
 				setAttribute(otherSession, deviceId);
 				setAttribute(mySession, otherDeviceId);
 
-				HttpHelloWorldServerHandler.queueSessionMap.remove(otherDeviceId);// 从队列中移除
-				HttpHelloWorldServerHandler.queueSessionMapVip.remove(otherDeviceId);// 从队列中移除
+				HttpHelloWorldServerHandler.queueSessionMap
+						.remove(otherDeviceId);// 从队列中移除
+				HttpHelloWorldServerHandler.queueSessionMapVip
+						.remove(otherDeviceId);// 从队列中移除
 
 				JSONObject toJo = new JSONObject();
 				toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
@@ -401,7 +412,7 @@ public class MessageServlet {
 		JSONObject jo = new JSONObject();
 		if (!file.isEmpty()) {
 			ServletContext sc = request.getSession().getServletContext();
-			String dir = sc.getRealPath("/upload/" + toId); // 设定文件保存的目录
+			String dir = "/mnt/" + toId; // 设定文件保存的目录
 			String filename = file.getOriginalFilename(); // 得到上传时的文件名
 			try {
 				FileUtils.writeByteArrayToFile(new File(dir, filename),
@@ -453,7 +464,7 @@ public class MessageServlet {
 			@PathVariable("deviceId") String deviceId)
 			throws FileNotFoundException, IOException {
 		ServletContext sc = request.getSession().getServletContext();
-		String dir = sc.getRealPath("/upload/" + deviceId);
+		String dir = "/mnt/" + deviceId;
 		File downloadFile = new File(dir, fileName);
 		response.setContentLength(new Long(downloadFile.length()).intValue());
 		response.setHeader("Content-Disposition", "attachment; filename="
@@ -484,26 +495,132 @@ public class MessageServlet {
 	public @ResponseBody
 	Object isVip(@RequestParam String deviceId) {
 		JSONObject jo = new JSONObject();
-		Vip vip = vipDao.getVipByDeviceId(getmd5DeviceId(deviceId));
+		Vip vip = vipDao
+				.getVipByDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
+						: deviceId);
 		jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
 		jo.put(StaticUtil.CONTENT, vip);
 		return jo;
 	}
 
 	public String getmd5DeviceId(String deviceId) {
-		return MD5.GetMD5Code(deviceId).substring(8, 24);
+		return MyUtil.getmd5DeviceId(deviceId);
 	}
 
+	/**
+	 * 充值会员
+	 * 
+	 * @param deviceId
+	 * @param month
+	 * @return
+	 */
 	@RequestMapping(value = "/setvip")
 	public @ResponseBody
-	Object setVip(@RequestParam String deviceId) {
+	Object setVip(@RequestParam String deviceId,
+			@RequestParam(required = false) Integer month,
+			@RequestParam(required = false) Boolean girl) {
 		JSONObject jo = new JSONObject();
 		try {
-			Vip vip = new Vip();
-			vip.setDeviceId(deviceId);
-			vip.setTime(new Date().getTime());
+			Vip vip = vipDao
+					.getVipByDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
+							: deviceId);
+			if (month == null) {
+				month = 1;
+			}
+			if (vip == null) {
+				vip = new Vip();
+				vip.setDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
+						: deviceId);
+				vip.setCreateTime(new Date().getTime());
+				vip.setEndTime(vip.getCreateTime() + month * 30l * 24l * 60l
+						* 60l * 1000l);
+			} else {
+				long time = vip.getEndTime();
+				long now = new Date().getTime();
+				if (time > now) {// 没有过期
+					vip.setEndTime(vip.getEndTime() + month * 30l * 24l * 60l
+							* 60l * 1000l);
+				} else {// 已过期
+					vip.setCreateTime(new Date().getTime());
+					vip.setEndTime(vip.getCreateTime() + month * 30l * 24l
+							* 60l * 60l * 1000l);
+				}
+			}
 			vipDao.saveOrUpdate(vip);
+			if (girl != null && girl) {
+				UserTable ut = userDao.getUserByDeviceId(deviceId);
+				if (ut != null) {
+					UserBean ub = (UserBean) JSONObject.toBean(
+							JSONObject.fromObject(ut.getDetail()),
+							UserBean.class);
+					ub.setGirl(true);
+					ut.setDetail(JSONObject.fromObject(ub,
+							DefaultDefaultValueProcessor.getJsonConfig())
+							.toString());
+					userDao.update(ut);
+				}
+			}
 			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+		} catch (Exception e) {
+			jo.put(ResultCode.STATUS, ResultCode.FAIL);
+			jo.put(StaticUtil.CONTENT, e.toString());
+		}
+		return jo;
+	}
+
+	/**
+	 * 设置用户信息
+	 * 
+	 * @param deviceId
+	 * @param month
+	 * @return
+	 */
+	@RequestMapping(value = "/setuserdetail")
+	public @ResponseBody
+	Object setUserDetail(@RequestParam String deviceId,
+			@RequestParam(required = false) Integer sex,
+			@RequestParam(required = false) String lat,
+			@RequestParam(required = false) String lng,
+			@RequestParam(required = false) String province,
+			@RequestParam(required = false) String city) {
+		JSONObject jo = new JSONObject();
+		try {
+			UserTable userTable = userDao.getUserByDeviceId(deviceId);
+			if (userTable == null) {
+				userTable = new UserTable();
+				userTable.setDeviceId(deviceId);
+			}
+
+			UserBean userBean = null;
+			if (userTable.getDetail() == null
+					|| userTable.getDetail().equals("")) {
+				userBean = new UserBean();
+			} else {
+				userBean = (UserBean) JSONObject.toBean(
+						JSONObject.fromObject(userTable.getDetail()),
+						UserBean.class);
+			}
+			if (sex != null) {
+				if (userBean.sex != null) {
+					jo.put(ResultCode.STATUS, ResultCode.FAIL);
+					return jo;
+				}
+				userBean.sex = sex;
+			}
+			if (lat != null)
+				userBean.lat = lat;
+			if (lng != null)
+				userBean.lng = lng;
+			if (lat != null)
+				userBean.province = province;
+			if (lng != null)
+				userBean.city = city;
+
+			userTable.setDetail(MyUtil.toJson(userBean));
+
+			userDao.saveOrUpdate(userTable);
+			jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+			jo.put(StaticUtil.CONTENT, MyUtil.toJson(userTable));
 		} catch (Exception e) {
 			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 			jo.put(StaticUtil.CONTENT, e.toString());

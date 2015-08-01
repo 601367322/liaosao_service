@@ -10,7 +10,8 @@ public class Vip implements java.io.Serializable {
 
 	private Integer id;
 	private String deviceId;
-	private Long time;
+	private Long createTime;
+	private Long endTime;
 
 	// Constructors
 
@@ -19,9 +20,10 @@ public class Vip implements java.io.Serializable {
 	}
 
 	/** full constructor */
-	public Vip(String deviceId, Long time) {
+	public Vip(String deviceId, Long createTime, Long endTime) {
 		this.deviceId = deviceId;
-		this.time = time;
+		this.createTime = createTime;
+		this.endTime = endTime;
 	}
 
 	// Property accessors
@@ -42,12 +44,20 @@ public class Vip implements java.io.Serializable {
 		this.deviceId = deviceId;
 	}
 
-	public Long getTime() {
-		return this.time;
+	public Long getCreateTime() {
+		return this.createTime;
 	}
 
-	public void setTime(Long time) {
-		this.time = time;
+	public void setCreateTime(Long createTime) {
+		this.createTime = createTime;
+	}
+
+	public Long getEndTime() {
+		return this.endTime;
+	}
+
+	public void setEndTime(Long endTime) {
+		this.endTime = endTime;
 	}
 
 }

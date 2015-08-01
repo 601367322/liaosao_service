@@ -10,12 +10,7 @@ public class UserTable implements java.io.Serializable {
 
 	private Integer id;
 	private String deviceId;
-	private String token;
-	private String userName;
-	private String phone;
-	private String passWord;
-	private Integer userType;
-	private String otherToken;
+	private String detail;
 
 	// Constructors
 
@@ -23,16 +18,15 @@ public class UserTable implements java.io.Serializable {
 	public UserTable() {
 	}
 
-	/** full constructor */
-	public UserTable(String deviceId, String token, String userName,
-			String phone, String passWord, Integer userType, String otherToken) {
+	/** minimal constructor */
+	public UserTable(String deviceId) {
 		this.deviceId = deviceId;
-		this.token = token;
-		this.userName = userName;
-		this.phone = phone;
-		this.passWord = passWord;
-		this.userType = userType;
-		this.otherToken = otherToken;
+	}
+
+	/** full constructor */
+	public UserTable(String deviceId, String detail) {
+		this.deviceId = deviceId;
+		this.detail = detail;
 	}
 
 	// Property accessors
@@ -53,52 +47,12 @@ public class UserTable implements java.io.Serializable {
 		this.deviceId = deviceId;
 	}
 
-	public String getToken() {
-		return this.token;
+	public String getDetail() {
+		return this.detail;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
-	}
-
-	public String getUserName() {
-		return this.userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getPhone() {
-		return this.phone;
-	}
-
-	public void setPhone(String phone) {
-		this.phone = phone;
-	}
-
-	public String getPassWord() {
-		return this.passWord;
-	}
-
-	public void setPassWord(String passWord) {
-		this.passWord = passWord;
-	}
-
-	public Integer getUserType() {
-		return this.userType;
-	}
-
-	public void setUserType(Integer userType) {
-		this.userType = userType;
-	}
-
-	public String getOtherToken() {
-		return this.otherToken;
-	}
-
-	public void setOtherToken(String otherToken) {
-		this.otherToken = otherToken;
+	public void setDetail(String detail) {
+		this.detail = detail;
 	}
 
 }
