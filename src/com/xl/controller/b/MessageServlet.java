@@ -522,7 +522,7 @@ public class MessageServlet {
 		JSONObject jo = new JSONObject();
 		try {
 			Vip vip = vipDao
-					.getVipByDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
+					.getVipByDeviceIdAll(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
 							: deviceId);
 			if (month == null) {
 				month = 1;
