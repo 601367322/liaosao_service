@@ -18,6 +18,7 @@ public class MyTask implements ServletContextAware {
 
 	// @Scheduled(cron = "0 0/10 * * * ? ")// 间隔10分钟执行
 	@Scheduled(cron = "0 0 5 * * ?")
+//	@Scheduled(cron = "0/5 * * * * ?")
 	// 间隔10分钟执行
 	public void taskCycle() {
 		String dir = "/mnt/"; // 设定文件保存的目录

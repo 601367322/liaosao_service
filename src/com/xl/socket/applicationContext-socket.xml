@@ -4,5 +4,5 @@
 	xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean class="com.xl.socket.MainMinaServer" init-method="init" ></bean>
+	<bean class="com.xl.socket.MainMinaServer" init-method="init" destroy-method="destory"></bean>
 </beans>
