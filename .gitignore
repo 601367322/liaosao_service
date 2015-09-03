@@ -1,0 +1,5 @@
+/.idea
+/.settings
+*.class
+*.iml
+/WebRoot/WEB-INF/classes
