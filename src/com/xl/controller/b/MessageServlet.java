@@ -62,10 +62,6 @@ public class MessageServlet {
 	 * 
 	 * @param content
 	 *            消息内容
-	 * @param toId
-	 *            对面的ID
-	 * @param fromId
-	 *            自己的ID
 	 * @return
 	 */
 	@RequestMapping(value = "/sendmessage", method = { RequestMethod.GET,
@@ -569,7 +565,6 @@ public class MessageServlet {
 	 * 设置用户信息
 	 * 
 	 * @param deviceId
-	 * @param month
 	 * @return
 	 */
 	@RequestMapping(value = "/setuserdetail")
@@ -622,6 +617,13 @@ public class MessageServlet {
 			jo.put(ResultCode.STATUS, ResultCode.FAIL);
 			jo.put(StaticUtil.CONTENT, e.toString());
 		}
+		return jo;
+	}
+
+	@RequestMapping(value = "/groupchat")
+	public @ResponseBody Object groupChat(@RequestParam String deviceId){
+		JSONObject jo = new JSONObject();
+
 		return jo;
 	}
 }

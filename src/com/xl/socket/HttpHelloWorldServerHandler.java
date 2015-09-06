@@ -19,6 +19,7 @@ public class HttpHelloWorldServerHandler extends
 	public static ConcurrentHashMap<String, ChannelHandlerContext> sessionMap = new ConcurrentHashMap<String, ChannelHandlerContext>();
 	public static LinkedHashMap<String, ChannelHandlerContext> queueSessionMap = new LinkedHashMap<String, ChannelHandlerContext>();
 	public static LinkedHashMap<String, ChannelHandlerContext> queueSessionMapVip = new LinkedHashMap<String, ChannelHandlerContext>();
+	public static LinkedHashMap<String,ChannelHandlerContext> groupSessionMap = new LinkedHashMap<String, ChannelHandlerContext>();
 
 	@Override
 	protected void messageReceived(ChannelHandlerContext ctx, String str)
