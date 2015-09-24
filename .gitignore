@@ -4,3 +4,9 @@
 *.iml
 /WebRoot/WEB-INF/classes
 /out
+.classpath
+.myhibernatedata
+.mymetadata
+.project
+.springBeans
+hibernate.reveng.xml
