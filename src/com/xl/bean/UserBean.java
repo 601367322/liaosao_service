@@ -10,6 +10,8 @@ public class UserBean implements Serializable{
 	public String city;
 	public boolean vip;
 	public boolean girl;
+    public String nickname;
+    public String logo;
 	
 	
 	public boolean isGirl() {
@@ -54,5 +56,20 @@ public class UserBean implements Serializable{
 	public void setCity(String city) {
 		this.city = city;
 	}
-	
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
 }

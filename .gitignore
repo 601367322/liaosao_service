@@ -3,3 +3,4 @@
 *.class
 *.iml
 /WebRoot/WEB-INF/classes
+/out

@@ -1,11 +1,10 @@
 package com.xl.bean;
 
-import java.io.Serializable;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
 
 @Entity
 @Table(name="MessageBean")
@@ -123,5 +122,11 @@ public class MessageBean implements Serializable{
 	public void setState(int state) {
 		this.state = state;
 	}
-	
+
+    public static final int TEXT = 0;
+    public static final int VOICE = 1;
+    public static final int IMAGE = 2;
+    public static final int FACE = 3;
+    public static final int RADIO = 4;
+
 }

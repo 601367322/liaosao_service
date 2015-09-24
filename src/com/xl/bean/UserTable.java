@@ -1,5 +1,8 @@
 package com.xl.bean;
 
+import com.xl.util.DefaultDefaultValueProcessor;
+import net.sf.json.JSONObject;
+
 /**
  * UserTable entity. @author MyEclipse Persistence Tools
  */
@@ -50,6 +53,16 @@ public class UserTable implements java.io.Serializable {
 	public String getDetail() {
 		return this.detail;
 	}
+
+    public UserBean getUserBean(){
+        return (UserBean) JSONObject.toBean(
+                JSONObject.fromObject(detail), UserBean.class);
+    }
+
+    public void setUserBean(UserBean userBean){
+        setDetail(JSONObject.fromObject(userBean,
+                DefaultDefaultValueProcessor.getJsonConfig()).toString());
+    }
 
 	public void setDetail(String detail) {
 		this.detail = detail;

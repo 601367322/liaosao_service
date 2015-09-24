@@ -1,85 +1,58 @@
 package com.xl.filter;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
+import com.xl.bean.UserBean;
+import com.xl.bean.UserTable;
+import com.xl.bean.Vip;
+import com.xl.dao.UserDao;
+import com.xl.dao.VipDao;
+import com.xl.util.MyUtil;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import net.sf.json.JSONObject;
-
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.xl.bean.UserTable;
-import com.xl.dao.UserDao;
-import com.xl.util.ResultCode;
+import java.io.IOException;
 
 public class SessionFilter extends OncePerRequestFilter {
 
-//	public UserDao userDao;
-	
-	@Override
-	protected void initFilterBean() throws ServletException {
-		// TODO Auto-generated method stub
-		super.initFilterBean();
-//		WebApplicationContext context = WebApplicationContextUtils
-//				.getWebApplicationContext(getServletContext());
-//		userDao = (UserDao) context.getBean("userDao");
-	}
+    public UserDao userDao;
+    public VipDao vipDao;
 
-	@Override
-	protected void doFilterInternal(HttpServletRequest request,
-			HttpServletResponse response, FilterChain filterChain)
-			throws ServletException, IOException {
-		String uri = request.getRequestURI();
-		/*if (uri.indexOf("/b/") != -1) {
-			boolean doFilter = true;
-			if (doFilter) {
-				Object obj = request.getSession().getAttribute("user");
-				if (null == obj) {
-					Object token = request.getParameter("token");
-					if (token != null) {
-						UserTable ut=userDao.getUserByToken(token.toString());
-						if(ut==null){
-							retrunFaile(request, response);
-						}else{
-							 request.getSession().setAttribute("user", ut);
-							 filterChain.doFilter(request, response);
-						}
-					} else {
-						retrunFaile(request, response);
-					}
-				} else {
-					filterChain.doFilter(request, response);
-				}
-			} else {
-				filterChain.doFilter(request, response);
-			}
-		} else {*/
-			filterChain.doFilter(request, response);
-//		}
-	}
+    @Override
+    protected void initFilterBean() throws ServletException {
+        // TODO Auto-generated method stub
+        super.initFilterBean();
+        WebApplicationContext context = WebApplicationContextUtils
+                .getWebApplicationContext(getServletContext());
+        userDao = (UserDao) context.getBean("userDao");
+        vipDao = (VipDao) context.getBean("vipDao");
+    }
 
-	public void retrunFaile(HttpServletRequest request,
-			HttpServletResponse response){
-		try {
-			request.setCharacterEncoding("UTF-8");
-			response.setCharacterEncoding("UTF-8");
-			JSONObject jo = new JSONObject();
-			jo.put(ResultCode.STATUS, ResultCode.FAIL);
-			PrintWriter out = response.getWriter();
-			out.println(jo.toString());
-			out.flush();
-			out.close();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        request.setCharacterEncoding("utf-8");
+        String deviceId = request.getParameter("deviceId");
+        if (!MyUtil.isEmpty(deviceId)) {
+            UserTable uts = null;
+            if ((uts = (UserTable) request.getSession().getAttribute(MyUtil.SESSION_TAG_USER)) == null) {
+                UserTable ut = userDao.getUserByDeviceId(deviceId);
+                if (ut != null) {
+                    Vip vip = vipDao.getVipByDeviceId(deviceId);//查询vip信息
+                    if (vip != null) {
+                        UserBean ub = ut.getUserBean();
+                        ub.setVip(true);
+                        ut.setUserBean(ub);
+                    }
+                    request.getSession().setAttribute(MyUtil.SESSION_TAG_USER, ut);
+                }
+            }
+        }
+        filterChain.doFilter(request, response);
+    }
 }
