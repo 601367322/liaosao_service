@@ -6,6 +6,7 @@ import com.xl.dao.UserDao;
 import com.xl.dao.VipDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
+import com.xl.util.MyRequestUtil;
 import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
 import io.netty.channel.ChannelHandlerContext;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.Date;
 
 /**
@@ -33,7 +35,8 @@ public class GroupMessageServlet {
     public UserDao userDao;
     @Autowired
     HttpServletRequest request;
-
+    @Autowired
+    HttpSession session;
     /**
      * 群聊
      *
@@ -50,7 +53,7 @@ public class GroupMessageServlet {
             HttpHelloWorldServerHandler.groupSessionMap.remove(deviceId);
             //如果socket连接则添加到群组中
             if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
-                UserTable ut = (UserTable) request.getSession().getAttribute(MyUtil.SESSION_TAG_USER);//查询用户信息
+                UserTable ut = MyRequestUtil.getUserTable(session);//查询用户信息
                 if (ut == null) {
                     jo.put(ResultCode.STATUS, ResultCode.FAIL);
                     return jo;
@@ -91,7 +94,7 @@ public class GroupMessageServlet {
 
         System.out.println(content.toString());
 
-        UserTable ut = (UserTable) request.getSession().getAttribute(MyUtil.SESSION_TAG_USER);
+        UserTable ut = MyRequestUtil.getUserTable(session);
 
         if(ut==null){
             jo.put(ResultCode.STATUS, ResultCode.FAIL);

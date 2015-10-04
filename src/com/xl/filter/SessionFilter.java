@@ -5,6 +5,7 @@ import com.xl.bean.UserTable;
 import com.xl.bean.Vip;
 import com.xl.dao.UserDao;
 import com.xl.dao.VipDao;
+import com.xl.util.MyRequestUtil;
 import com.xl.util.MyUtil;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -40,7 +41,8 @@ public class SessionFilter extends OncePerRequestFilter {
         String deviceId = request.getParameter("deviceId");
         if (!MyUtil.isEmpty(deviceId)) {
             UserTable uts = null;
-            if ((uts = (UserTable) request.getSession().getAttribute(MyUtil.SESSION_TAG_USER)) == null) {
+            //如果session中不存在用户信息，则从数据库里查询放到session里
+            if ((uts = MyRequestUtil.getUserTable(request)) == null) {
                 UserTable ut = userDao.getUserByDeviceId(deviceId);
                 if (ut != null) {
                     Vip vip = vipDao.getVipByDeviceId(deviceId);//查询vip信息
@@ -49,7 +51,7 @@ public class SessionFilter extends OncePerRequestFilter {
                         ub.setVip(true);
                         ut.setUserBean(ub);
                     }
-                    request.getSession().setAttribute(MyUtil.SESSION_TAG_USER, ut);
+                    MyRequestUtil.setUserTable(request.getSession(),ut);
                 }
             }
         }

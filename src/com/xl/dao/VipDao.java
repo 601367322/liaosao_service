@@ -1,14 +1,17 @@
 package com.xl.dao;
 
+import com.xl.bean.Vip;
+import com.xl.util.MyUtil;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.xl.bean.Vip;
-
 public class VipDao extends BaseDao {
 
 	public Vip getVipByDeviceId(String deviceId) {
+        deviceId = deviceId.length() > 16 ? MyUtil
+                .getmd5DeviceId(deviceId) : deviceId;
 		List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
 				"From Vip v where v.deviceId = '" + deviceId
 						+ "' and v.endTime > " + new Date().getTime());

@@ -6,8 +6,6 @@ import java.text.SimpleDateFormat;
 
 public class MyUtil {
 
-    public static final String SESSION_TAG_USER = "session_user";
-
 	public static final SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd hh:mm:ss");
 
@@ -35,4 +33,5 @@ public class MyUtil {
         else
             return false;
     }
+
 }

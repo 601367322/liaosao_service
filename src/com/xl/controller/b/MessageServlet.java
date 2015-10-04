@@ -7,6 +7,7 @@ import com.xl.dao.VipDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
 import com.xl.util.DefaultDefaultValueProcessor;
+import com.xl.util.MyRequestUtil;
 import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,17 +22,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 @Controller
 @RequestMapping(value = "/b")
@@ -45,7 +42,9 @@ public class MessageServlet {
     public UserDao userDao;
 
     @Autowired
-    private  HttpServletRequest request;
+    private HttpServletRequest request;
+    @Autowired
+    private HttpSession session;
 
     /**
      * 给对方发送消息
@@ -212,7 +211,7 @@ public class MessageServlet {
         HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
         HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
 
-        Vip vip = vipDao.getVipByDeviceId(getmd5DeviceId(deviceId));
+        Vip vip = vipDao.getVipByDeviceId(deviceId);
         if (vip == null) {
             jo.put(ResultCode.STATUS, ResultCode.NOVIP);
             return jo;
@@ -388,40 +387,46 @@ public class MessageServlet {
     @RequestMapping(value = "/uploadfile")
     public
     @ResponseBody
-    Object upload(HttpServletRequest request,
-                  @RequestParam("file") MultipartFile file,
-                  @RequestParam String deviceId, @RequestParam String toId,
-                  @RequestParam String msgType,
-                  @RequestParam(required = false) Integer sex,
-                  @RequestParam(required = false) Integer voiceTime) {
+    Object upload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(required = false, value = "thumb") MultipartFile thumb,
+            @RequestParam String deviceId, @RequestParam String toId,
+            @RequestParam String msgType,
+            @RequestParam(required = false) Integer sex,
+            @RequestParam(required = false) Integer voiceTime) {
         JSONObject jo = new JSONObject();
         if (!file.isEmpty()) {
-            ServletContext sc = request.getSession().getServletContext();
-            String dir = "/mnt/" + toId; // 设定文件保存的目录
-            String filename = file.getOriginalFilename(); // 得到上传时的文件名
+            String dir = "/mnt/" + toId;
+            String filename = file.getOriginalFilename();
             try {
                 FileUtils.writeByteArrayToFile(new File(dir, filename),
                         file.getBytes());
+
+                String content = filename;
+                if (thumb != null) {
+                    FileUtils.writeByteArrayToFile(new File(dir, thumb.getOriginalFilename()), thumb.getBytes());
+                    JSONObject radioBean = new JSONObject();
+                    radioBean.put("file", filename);
+                    radioBean.put("thumb", thumb.getOriginalFilename());
+                    content = "\"" + radioBean + "\"";
+                }
 
                 // //////////////
                 JSONObject toJo = new JSONObject();
                 toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
                 toJo.put(StaticUtil.FROMID, deviceId);
                 toJo.put(StaticUtil.TOID, toId);
-                toJo.put(StaticUtil.CONTENT, filename);
-                toJo.put(StaticUtil.MSGID, "");
+                toJo.put(StaticUtil.CONTENT, content);
+                toJo.put(StaticUtil.MSGID, new Date().getTime());
                 toJo.put(StaticUtil.MSGTYPE, msgType);
                 toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
                 toJo.put(StaticUtil.VOICETIME, voiceTime);
                 toJo.put(StaticUtil.SEX, sex);
 
                 if (HttpHelloWorldServerHandler.sessionMap.containsKey(toId)) {// 查看对方是否连接
-
                     ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
                             .get(toId);// 获取对方session
-
                     session.writeAndFlush(toJo.toString() + "\n");
-
                 } else {
                     unlineMessageDao.save(new UnlineMessage(deviceId, toId,
                             toJo.toString()));
@@ -447,8 +452,7 @@ public class MessageServlet {
                          HttpServletResponse response,
                          @PathVariable("fileName") String fileName,
                          @PathVariable("deviceId") String deviceId)
-            throws FileNotFoundException, IOException {
-        ServletContext sc = request.getSession().getServletContext();
+            throws IOException {
         String dir = "/mnt/" + deviceId;
         File downloadFile = new File(dir, fileName);
         response.setContentLength(new Long(downloadFile.length()).intValue());
@@ -483,8 +487,7 @@ public class MessageServlet {
     Object isVip(@RequestParam String deviceId) {
         JSONObject jo = new JSONObject();
         Vip vip = vipDao
-                .getVipByDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
-                        : deviceId);
+                .getVipByDeviceId(deviceId);
         jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
         jo.put(StaticUtil.CONTENT, vip);
         return jo;
@@ -611,7 +614,7 @@ public class MessageServlet {
             userTable.setDetail(MyUtil.toJson(userBean));
 
             userDao.saveOrUpdate(userTable);
-            request.getSession().removeAttribute(MyUtil.SESSION_TAG_USER);
+            MyRequestUtil.setUserTable(session, userTable);
             jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
             jo.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(userTable));
         } catch (Exception e) {

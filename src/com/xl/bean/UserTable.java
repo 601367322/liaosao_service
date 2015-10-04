@@ -3,36 +3,25 @@ package com.xl.bean;
 import com.xl.util.DefaultDefaultValueProcessor;
 import net.sf.json.JSONObject;
 
-/**
- * UserTable entity. @author MyEclipse Persistence Tools
- */
+import java.io.Serializable;
 
-public class UserTable implements java.io.Serializable {
-
-	// Fields
+public class UserTable implements Serializable {
 
 	private Integer id;
 	private String deviceId;
 	private String detail;
 
-	// Constructors
-
-	/** default constructor */
 	public UserTable() {
 	}
 
-	/** minimal constructor */
 	public UserTable(String deviceId) {
 		this.deviceId = deviceId;
 	}
 
-	/** full constructor */
 	public UserTable(String deviceId, String detail) {
 		this.deviceId = deviceId;
 		this.detail = detail;
 	}
-
-	// Property accessors
 
 	public Integer getId() {
 		return this.id;
