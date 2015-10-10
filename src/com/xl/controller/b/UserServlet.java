@@ -1,12 +1,13 @@
 package com.xl.controller.b;
 
+import com.xl.bean.Pay;
 import com.xl.bean.UserBean;
 import com.xl.bean.UserTable;
+import com.xl.bean.Vip;
+import com.xl.dao.PayDao;
 import com.xl.dao.UserDao;
-import com.xl.util.MyJSONUtil;
-import com.xl.util.MyRequestUtil;
-import com.xl.util.ResultCode;
-import com.xl.util.StringUtil;
+import com.xl.dao.VipDao;
+import com.xl.util.*;
 import net.coobird.thumbnailator.ThumbnailParameter;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.name.Rename;
@@ -39,6 +40,10 @@ public class UserServlet {
     HttpSession session;
     @Resource
     UserDao userDao;
+    @Resource
+    PayDao payDao;
+    @Resource
+    VipDao vipDao;
 
     /**
      * 上传头像
@@ -84,7 +89,7 @@ public class UserServlet {
                 ut.setUserBean(ub);
                 userDao.update(ut);
 
-                if(oldFiles!=null) {
+                if (oldFiles != null) {
                     for (int i = 0; i < oldFiles.length; i++) {
                         if (oldFiles[i].exists()) {
                             oldFiles[i].delete();
@@ -108,4 +113,70 @@ public class UserServlet {
     }
 
 
+    @RequestMapping(value = "/pay")
+    public
+    @ResponseBody
+    Object pay(@RequestParam String orderId) {
+        try {
+            UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
+
+            if (!Bmob.isInit()) {
+                Bmob.initBmob("2c9f0c5fbeb32f1b1bce828d29514f5d",
+                        "592b4d559540535e66ad45364913ec1f");
+            }
+
+            String str = Bmob.findPayOrder(orderId);
+
+            Pay order = (Pay) JSONObject.toBean(JSONObject.fromObject(str), Pay.class);
+
+            if (order != null && order.getTrade_state().equals("SUCCESS")) {
+                Pay dbOrder = payDao.getPay(orderId);
+                if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
+                    //可以增加会员
+                    payDao.save(order);
+                    setVip(ut.getDeviceId(), 1);
+                    return MyJSONUtil.getSuccessJsonObject();
+                } else {
+                    //不可以
+                    return MyJSONUtil.getErrorJsonObject();
+                }
+            } else {
+                return MyJSONUtil.getErrorInfoJsonObject(StringUtil.FAIL_PAY);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return MyJSONUtil.getErrorJsonObject();
+        }
+    }
+
+    public void setVip(String deviceId, Integer month) {
+        try {
+            Vip vip = vipDao.getVipByDeviceIdAll(deviceId);
+            if (month == null) {
+                month = 1;
+            }
+            if (vip == null) {
+                vip = new Vip();
+                vip.setDeviceId(deviceId.length() > 16 ? MyUtil.getmd5DeviceId(deviceId)
+                        : deviceId);
+                vip.setCreateTime(new Date().getTime());
+                vip.setEndTime(vip.getCreateTime() + month * 30l * 24l * 60l
+                        * 60l * 1000l);
+            } else {
+                long time = vip.getEndTime();
+                long now = new Date().getTime();
+                if (time > now) {// 没有过期
+                    vip.setEndTime(vip.getEndTime() + month * 30l * 24l * 60l
+                            * 60l * 1000l);
+                } else {// 已过期
+                    vip.setCreateTime(new Date().getTime());
+                    vip.setEndTime(vip.getCreateTime() + month * 30l * 24l
+                            * 60l * 60l * 1000l);
+                }
+            }
+            vipDao.saveOrUpdate(vip);
+            request.removeAttribute(deviceId);
+        } catch (Exception e) {
+        }
+    }
 }

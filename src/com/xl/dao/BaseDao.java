@@ -15,4 +15,5 @@ public class BaseDao extends HibernateDaoSupport{
 	public void update(Object obj){
 		getHibernateTemplate().update(obj);
 	}
+
 }

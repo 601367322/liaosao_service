@@ -22,4 +22,10 @@ public class MyJSONUtil {
         jo.put(ResultCode.STATUS, ResultCode.FAIL);
         return jo;
     }
+
+    public static JSONObject getSuccessJsonObject() {
+        JSONObject jo = new JSONObject();
+        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        return jo;
+    }
 }

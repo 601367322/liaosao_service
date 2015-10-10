@@ -15,4 +15,8 @@
 	<bean id="vipDao" class="com.xl.dao.VipDao">
 		<property name="sessionFactory" ref="sessionFactory"></property>
 	</bean>
+
+	<bean id="payDao" class="com.xl.dao.PayDao">
+		<property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
 </beans>

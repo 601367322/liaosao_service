@@ -6,4 +6,6 @@ package com.xl.util;
 public class StringUtil {
 
     public static final String FAIL_PLEASE_RELOGIN = "请重新登录";
+
+    public static final String FAIL_PAY = "充值失败";
 }

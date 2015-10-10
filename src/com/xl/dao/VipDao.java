@@ -9,26 +9,26 @@ import java.util.List;
 
 public class VipDao extends BaseDao {
 
-	public Vip getVipByDeviceId(String deviceId) {
-        deviceId = deviceId.length() > 16 ? MyUtil
-                .getmd5DeviceId(deviceId) : deviceId;
-		List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
-				"From Vip v where v.deviceId = '" + deviceId
-						+ "' and v.endTime > " + new Date().getTime());
-		if (list.size() > 0) {
-			return list.get(0);
-		} else {
-			return null;
-		}
-	}
+    public Vip getVipByDeviceId(String deviceId) {
+        deviceId = MyUtil.getmd5DeviceId(deviceId);
+        List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
+                "From Vip v where v.deviceId = '" + deviceId
+                        + "' and v.endTime > " + new Date().getTime());
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
 
-	public Vip getVipByDeviceIdAll(String deviceId) {
-		List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
-				"From Vip v where v.deviceId = '" + deviceId + "'");
-		if (list.size() > 0) {
-			return list.get(0);
-		} else {
-			return null;
-		}
-	}
+    public Vip getVipByDeviceIdAll(String deviceId) {
+        deviceId = MyUtil.getmd5DeviceId(deviceId);
+        List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
+                "From Vip v where v.deviceId = '" + deviceId + "'");
+        if (list.size() > 0) {
+            return list.get(0);
+        } else {
+            return null;
+        }
+    }
 }

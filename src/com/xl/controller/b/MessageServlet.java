@@ -206,7 +206,6 @@ public class MessageServlet {
                      @RequestParam(required = false) Integer wantSex) {
         JSONObject jo = new JSONObject();
         System.out.println("joinQueue\t" + deviceId);
-        System.out.println(getmd5DeviceId(deviceId));
 
         HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
         HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
@@ -493,10 +492,6 @@ public class MessageServlet {
         return jo;
     }
 
-    public String getmd5DeviceId(String deviceId) {
-        return MyUtil.getmd5DeviceId(deviceId);
-    }
-
     /**
      * 充值会员
      *
@@ -513,15 +508,13 @@ public class MessageServlet {
         JSONObject jo = new JSONObject();
         try {
             Vip vip = vipDao
-                    .getVipByDeviceIdAll(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
-                            : deviceId);
+                    .getVipByDeviceIdAll(deviceId);
             if (month == null) {
                 month = 1;
             }
             if (vip == null) {
                 vip = new Vip();
-                vip.setDeviceId(deviceId.length() > 16 ? getmd5DeviceId(deviceId)
-                        : deviceId);
+                vip.setDeviceId(MyUtil.getmd5DeviceId(deviceId));
                 vip.setCreateTime(new Date().getTime());
                 vip.setEndTime(vip.getCreateTime() + month * 30l * 24l * 60l
                         * 60l * 1000l);

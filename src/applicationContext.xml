@@ -25,16 +25,13 @@
 			</props>
 		</property>
 
-		<property name="packagesToScan">
-			<list>
-				<value>com.xl.bean.MessageBean</value>
-			</list>
-		</property>
 		<property name="mappingResources">
 			<list>
 				<value>com/xl/bean/UserTable.hbm.xml</value>
 				<value>com/xl/bean/UnlineMessage.hbm.xml</value>
-				<value>com/xl/bean/Vip.hbm.xml</value></list>
+				<value>com/xl/bean/Vip.hbm.xml</value>
+				<value>com/xl/bean/Pay.hbm.xml</value>
+			</list>
 		</property>
 	</bean>
 
