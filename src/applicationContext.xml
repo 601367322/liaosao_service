@@ -20,9 +20,11 @@
 			<props>
 				<prop key="hibernate.dialect">${dataSource.dialect}</prop>
 				<prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>
-				<prop key="hibernate.show_sql">false</prop>
+				<prop key="hibernate.show_sql">true</prop>
 				<prop key="hibernate.format_sql">false</prop>
-			</props>
+                <prop key="hibernate.connection.url">jdbc:mysql://localhost:3306/xl_database</prop>
+                <prop key="hibernate.connection.driver_class">com.mysql.jdbc.Driver</prop>
+            </props>
 		</property>
 
 		<property name="mappingResources">
@@ -31,7 +33,8 @@
 				<value>com/xl/bean/UnlineMessage.hbm.xml</value>
 				<value>com/xl/bean/Vip.hbm.xml</value>
 				<value>com/xl/bean/Pay.hbm.xml</value>
-			</list>
+                <value>com/xl/bean/VipCoin.hbm.xml</value>
+            </list>
 		</property>
 	</bean>
 

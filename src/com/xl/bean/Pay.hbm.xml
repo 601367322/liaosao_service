@@ -9,25 +9,25 @@
             <column name="out_trade_no" sql-type="varchar" length="50" not-null="true"/>
         </id>
         <property name="name">
-            <column name="name" sql-type="varchar"/>
+            <column name="name" length="50"  sql-type="varchar"/>
         </property>
         <property name="body">
-            <column name="body" sql-type="varchar"/>
+            <column name="body" length="50"  sql-type="varchar"/>
         </property>
         <property name="create_time">
-            <column name="create_time" sql-type="varchar"/>
+            <column name="create_time" length="50"  sql-type="varchar"/>
         </property>
         <property name="transaction_id">
-            <column name="transaction_id" sql-type="varchar"/>
+            <column name="transaction_id" length="50"  sql-type="varchar"/>
         </property>
         <property name="pay_type">
-            <column name="pay_type" sql-type="varchar"/>
+            <column name="pay_type" length="50"  sql-type="varchar"/>
         </property>
         <property name="total_fee">
             <column name="total_fee" sql-type="double" precision="22"/>
         </property>
         <property name="trade_state">
-            <column name="trade_state" sql-type="varchar"/>
+            <column name="trade_state" length="50"  sql-type="varchar"/>
         </property>
     </class>
 </hibernate-mapping>

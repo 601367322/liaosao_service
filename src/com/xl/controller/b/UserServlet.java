@@ -1,11 +1,9 @@
 package com.xl.controller.b;
 
-import com.xl.bean.Pay;
-import com.xl.bean.UserBean;
-import com.xl.bean.UserTable;
-import com.xl.bean.Vip;
+import com.xl.bean.*;
 import com.xl.dao.PayDao;
 import com.xl.dao.UserDao;
+import com.xl.dao.VipCoinDao;
 import com.xl.dao.VipDao;
 import com.xl.util.*;
 import net.coobird.thumbnailator.ThumbnailParameter;
@@ -44,6 +42,8 @@ public class UserServlet {
     PayDao payDao;
     @Resource
     VipDao vipDao;
+    @Resource(name = "vipCoinDao")
+    VipCoinDao coinDao;
 
     /**
      * 上传头像
@@ -113,6 +113,12 @@ public class UserServlet {
     }
 
 
+    /**
+     * 自动充值
+     *
+     * @param orderId
+     * @return
+     */
     @RequestMapping(value = "/pay")
     public
     @ResponseBody
@@ -178,5 +184,15 @@ public class UserServlet {
             request.removeAttribute(deviceId);
         } catch (Exception e) {
         }
+    }
+
+    @RequestMapping(value = "/vipdetail")
+    public
+    @ResponseBody
+    Object vipDetail(@RequestParam Integer id) {
+        JSONObject jo = new JSONObject();
+        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        jo.put(ResultCode.INFO, JSONObject.fromObject(coinDao.getCoinById(id)));
+        return jo;
     }
 }
