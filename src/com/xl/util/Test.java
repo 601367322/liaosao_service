@@ -19,7 +19,7 @@ public class Test {
                     if (child_files[j].isFile()) {
                         File child = child_files[j];
                         if (child.getName().length() < "1439655813814".length()) {
-                            if (getFileSizes(child) > 300 * 1024) {
+                            if (getFileSizes(child) > 140 * 1024) {
                                 child.renameTo(new File(main_dir.getPath() + "\\" + child.getName() + ".mp4"));
                             } else {
                                 child.renameTo(new File(main_dir.getPath() + "\\" + child.getName() + ".amr"));
