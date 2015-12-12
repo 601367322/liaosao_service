@@ -3,6 +3,8 @@ package com.xl.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by Shen on 2015/8/16.
@@ -10,7 +12,10 @@ import java.io.IOException;
 public class Test {
 
     public static void main(String[] args) {
-        File main_dir = new File("C:\\Users\\Shen\\Desktop\\11");
+        Date d = new Date(1451979399498l);
+        System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(d));
+        System.out.println(new Date().getTime());
+        /*File main_dir = new File("C:\\Users\\Shen\\Desktop\\11");
         File[] file = main_dir.listFiles();
         for (int i = 0; i < file.length; i++) {
             if (file[i].isDirectory()) {
@@ -30,10 +35,10 @@ public class Test {
                     }
                 }
             }
-        }
+        }*/
     }
 
-    public static long getFileSizes(File f) {//取得文件大小
+    public static long getFileSizes(File f) {//鍙栧緱鏂囦欢澶у皬
         long s = 0;
         if (f.exists()) {
             try {

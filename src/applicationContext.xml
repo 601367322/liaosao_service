@@ -22,8 +22,6 @@
 				<prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>
 				<prop key="hibernate.show_sql">false</prop>
 				<prop key="hibernate.format_sql">false</prop>
-                <prop key="hibernate.connection.url">jdbc:mysql://localhost:3306/xl_database</prop>
-                <prop key="hibernate.connection.driver_class">com.mysql.jdbc.Driver</prop>
             </props>
 		</property>
 
