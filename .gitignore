@@ -2,8 +2,9 @@
 /.settings
 *.class
 *.iml
-/WebRoot/WEB-INF/classes
+/src/main/webapp/WEB-INF/classes
 /out
+/target
 .classpath
 .myhibernatedata
 .mymetadata

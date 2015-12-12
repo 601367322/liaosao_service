@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="com.xl.bean.Pay" table="pay" schema="" catalog="xl_database">
+        <id name="out_trade_no"  type="java.lang.String">
+            <column name="out_trade_no"  length="50" not-null="true"/>
+        </id>
+        <property name="name"  type="java.lang.String">
+            <column name="name" length="50"  />
+        </property>
+        <property name="body" type="java.lang.String">
+            <column name="body" length="50"  />
+        </property>
+        <property name="create_time" type="java.lang.String">
+            <column name="create_time" length="50"  />
+        </property>
+        <property name="transaction_id" type="java.lang.String">
+            <column name="transaction_id" length="50"  />
+        </property>
+        <property name="pay_type" type="java.lang.String">
+            <column name="pay_type" length="50"  />
+        </property>
+        <property name="total_fee" type="java.lang.Double">
+            <column name="total_fee"  precision="22"/>
+        </property>
+        <property name="trade_state" type="java.lang.String">
+            <column name="trade_state" length="50"  />
+        </property>
+    </class>
+</hibernate-mapping>
