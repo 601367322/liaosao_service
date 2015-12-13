@@ -563,12 +563,7 @@ public class MessageServlet {
     public
     @ResponseBody
     Object setUserDetail(@RequestParam String deviceId,
-                         @RequestParam(required = false) Integer sex,
-                         @RequestParam(required = false) String lat,
-                         @RequestParam(required = false) String lng,
-                         @RequestParam(required = false) String province,
-                         @RequestParam(required = false) String nickname,
-                         @RequestParam(required = false) String city) {
+                         @ModelAttribute UserBean user) {
         JSONObject jo = new JSONObject();
         try {
             UserTable userTable = userDao.getUserByDeviceId(deviceId);
@@ -586,24 +581,29 @@ public class MessageServlet {
                         JSONObject.fromObject(userTable.getDetail()),
                         UserBean.class);
             }
-            if (sex != null) {
-                if (userBean.sex != null) {
-                    jo.put(ResultCode.STATUS, ResultCode.FAIL);
-                    return jo;
+            if (user != null) {
+                if (user.sex!= null) {
+                    if (userBean.sex != null) {
+                        jo.put(ResultCode.STATUS, ResultCode.FAIL);
+                        return jo;
+                    }
+                    userBean.sex = user.sex;
                 }
-                userBean.sex = sex;
+                if (user.lat != null)
+                    userBean.lat = user.lat;
+                if (user.lng != null)
+                    userBean.lng = user.lng;
+                if (user.province != null)
+                    userBean.province = user.province;
+                if (user.city != null)
+                    userBean.city = user.city;
+                if (user.nickname != null)
+                    userBean.nickname = user.nickname;
+                if (user.birthday != null)
+                    userBean.birthday = user.birthday;
+                if (user.desc != null)
+                    userBean.desc = user.desc;
             }
-            if (lat != null)
-                userBean.lat = lat;
-            if (lng != null)
-                userBean.lng = lng;
-            if (province != null)
-                userBean.province = province;
-            if (city != null)
-                userBean.city = city;
-            if (nickname != null)
-                userBean.nickname = nickname;
-
             userTable.setDetail(MyUtil.toJson(userBean));
 
             userDao.saveOrUpdate(userTable);
@@ -612,7 +612,7 @@ public class MessageServlet {
             jo.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(userTable));
         } catch (Exception e) {
             jo.put(ResultCode.STATUS, ResultCode.FAIL);
-            jo.put(StaticUtil.CONTENT, e.toString());
+            jo.put(ResultCode.INFO, e.toString());
         }
         return jo;
     }

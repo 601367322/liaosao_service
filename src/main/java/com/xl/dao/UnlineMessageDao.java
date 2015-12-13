@@ -1,10 +1,9 @@
 package com.xl.dao;
 
+import com.xl.bean.UnlineMessage;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.xl.bean.UnlineMessage;
-import com.xl.bean.UserTable;
 
 public class UnlineMessageDao extends BaseDao {
 

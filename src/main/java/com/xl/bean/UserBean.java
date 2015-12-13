@@ -12,6 +12,9 @@ public class UserBean implements Serializable{
 	public boolean girl;
     public String nickname;
     public String logo;
+    public Long birthday;
+    public String desc;
+
 	
 	
 	public boolean isGirl() {
@@ -71,5 +74,21 @@ public class UserBean implements Serializable{
 
     public void setLogo(String logo) {
         this.logo = logo;
+    }
+
+    public Long getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(Long birthday) {
+        this.birthday = birthday;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+
+    public void setDesc(String desc) {
+        this.desc = desc;
     }
 }
