@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="com.xl.bean.Account" table="account" schema="" catalog="xl_database">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" not-null="true"/>
+            <generator class="native"/>
+        </id>
+        <property name="deviceId" type="java.lang.String">
+            <column name="deviceId" length="50"/>
+        </property>
+        <property name="zhifubao" type="java.lang.String">
+            <column name="zhifubao" length="50"/>
+        </property>
+        <property name="weixin" type="java.lang.String">
+            <column name="weixin" length="50"/>
+        </property>
+        <property name="coin" type="java.lang.Double">
+            <column name="coin" precision="22"/>
+        </property>
+    </class>
+</hibernate-mapping>

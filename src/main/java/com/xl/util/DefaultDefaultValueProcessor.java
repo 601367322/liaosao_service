@@ -1,10 +1,9 @@
 package com.xl.util;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JsonConfig;
 import net.sf.json.processors.DefaultValueProcessor;
-import net.sf.json.util.JSONUtils;
+
+import java.util.Date;
 
 public class DefaultDefaultValueProcessor implements DefaultValueProcessor {
 	public Object getDefaultValue(Class type) {
@@ -16,6 +15,7 @@ public class DefaultDefaultValueProcessor implements DefaultValueProcessor {
 		jConfig.registerDefaultValueProcessor(Integer.class, new DefaultDefaultValueProcessor());
 		jConfig.registerDefaultValueProcessor(String.class, new DefaultDefaultValueProcessor());
 		jConfig.registerDefaultValueProcessor(Double.class, new DefaultDefaultValueProcessor());
+        jConfig.registerJsonValueProcessor(Date.class,new JsonDateValueProcessor());
 		return jConfig;
 	}
 }

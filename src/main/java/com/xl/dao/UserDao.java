@@ -1,8 +1,8 @@
 package com.xl.dao;
 
-import java.util.List;
-
 import com.xl.bean.UserTable;
+
+import java.util.List;
 
 public class UserDao extends BaseDao {
 
@@ -18,14 +18,4 @@ public class UserDao extends BaseDao {
 		return null;
 	}
 
-	public UserTable getUserByToken(String token) {
-		if (token != null) {
-			List<UserTable> list = (List<UserTable>) getHibernateTemplate()
-					.find("From UserTable u where u.token='" + token + "'");
-			if (list != null && list.size() > 0) {
-				return list.get(0);
-			}
-		}
-		return null;
-	}
 }

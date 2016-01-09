@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="com.xl.bean.Album" table="album" schema="" catalog="xl_database">
+        <id name="id" type="java.lang.Integer">
+            <column name="id" not-null="true"/>
+            <generator class="native" />
+        </id>
+        <property name="deviceId" type="java.lang.String">
+            <column name="deviceId" length="50"/>
+        </property>
+        <property name="path" type="java.lang.String">
+            <column name="path" length="150"/>
+        </property>
+    </class>
+</hibernate-mapping>

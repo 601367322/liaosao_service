@@ -1,5 +1,6 @@
 package com.xl.util;
 
+import com.xl.socket.StaticUtil;
 import net.sf.json.JSONObject;
 
 public class MyJSONUtil {
@@ -18,14 +19,19 @@ public class MyJSONUtil {
     }
 
     public static JSONObject getErrorJsonObject() {
-        JSONObject jo = new JSONObject();
-        jo.put(ResultCode.STATUS, ResultCode.FAIL);
-        return jo;
+        return getErrorInfoJsonObject(ResultCode.UNKNOW);
     }
 
     public static JSONObject getSuccessJsonObject() {
         JSONObject jo = new JSONObject();
         jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        return jo;
+    }
+
+    public static JSONObject getSuccessJsonObject(Object content) {
+        JSONObject jo = new JSONObject();
+        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        jo.put(StaticUtil.CONTENT, JSONObject.fromObject(content,DefaultDefaultValueProcessor.getJsonConfig()));
         return jo;
     }
 }

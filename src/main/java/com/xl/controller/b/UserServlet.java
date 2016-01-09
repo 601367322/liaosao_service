@@ -1,14 +1,14 @@
 package com.xl.controller.b;
 
 import com.xl.bean.*;
-import com.xl.dao.PayDao;
-import com.xl.dao.UserDao;
-import com.xl.dao.VipCoinDao;
-import com.xl.dao.VipDao;
+import com.xl.dao.*;
+import com.xl.exception.MyException;
+import com.xl.socket.StaticUtil;
 import com.xl.util.*;
 import net.coobird.thumbnailator.ThumbnailParameter;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.name.Rename;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +44,8 @@ public class UserServlet {
     VipDao vipDao;
     @Resource(name = "vipCoinDao")
     VipCoinDao coinDao;
+    @Resource
+    AlbumDao albumDao;
 
     /**
      * 上传头像
@@ -55,7 +57,7 @@ public class UserServlet {
     @RequestMapping(value = "/uploadlogo")
     public
     @ResponseBody
-    Object uploadLogo(@RequestParam("file") MultipartFile file, @RequestParam String deviceId) {
+    Object uploadLogo(@RequestParam("file") MultipartFile file, @RequestParam String deviceId) throws Exception {
         JSONObject jo = new JSONObject();
         if (!file.isEmpty()) {
             UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
@@ -112,6 +114,72 @@ public class UserServlet {
         return jo;
     }
 
+    /**
+     * 上传相册
+     *
+     * @param file
+     * @param deviceId
+     * @return
+     */
+    @RequestMapping(value = "/uploadalbum")
+    public
+    @ResponseBody
+    Object uploadAlbum(@RequestParam("file") MultipartFile file, @RequestParam String deviceId) throws Exception {
+        JSONObject jo = new JSONObject();
+        if (!file.isEmpty()) {
+            UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
+            if (ut == null) {
+                return MyJSONUtil.getErrorInfoJsonObject(StringUtil.FAIL_PLEASE_RELOGIN);
+            }
+            String dir = "/mnt/logo/" + ut.getDeviceId() + "/album"; // 设定文件保存的目录
+            String filename = new Date().getTime() + ".jpg"; // 得到上传时的文件名
+            try {
+
+                //存入地址为/mtn/logo/deviceId/album/logo.jpg
+                File logo;
+                FileUtils.writeByteArrayToFile(logo = new File(dir, filename),
+                        file.getBytes());
+
+                //图片压缩
+                thumb(logo, 320);
+                thumb(logo, 640);
+
+                Album album = new Album();
+                album.setDeviceId(deviceId);
+                album.setPath("logo/" + deviceId + "/album/" + filename);
+                albumDao.save(album);
+
+                album.setPath(MyRequestUtil.getHost(request) + album.getPath());
+                //返回地址http://host/img/deviceId/logo_.jpg
+                jo.put(StaticUtil.CONTENT, album);
+                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+                return jo;
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                jo = MyJSONUtil.getErrorJsonObject();
+            }
+        } else {
+            jo = MyJSONUtil.getErrorJsonObject();
+        }
+        return jo;
+    }
+
+    public void thumb(File file, int width) {
+        try {
+            Thumbnails.of(file)
+                    .size(width, width)
+                    .outputFormat("jpg")
+                    .toFiles(new Rename() {
+                        @Override
+                        public String apply(String name, ThumbnailParameter param) {
+                            return name + "_" + (int) param.getSize().getWidth() + "x" + (int) param.getSize().getHeight() + ".jpg";
+                        }
+                    });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * 自动充值
@@ -122,40 +190,35 @@ public class UserServlet {
     @RequestMapping(value = "/pay")
     public
     @ResponseBody
-    Object pay(@RequestParam String orderId) {
-        try {
-            UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
+    Object pay(@RequestParam String orderId) throws Exception {
+        UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
 
-            if (!Bmob.isInit()) {
-                Bmob.initBmob("2c9f0c5fbeb32f1b1bce828d29514f5d",
-                        "592b4d559540535e66ad45364913ec1f");
-            }
+        if (!Bmob.isInit()) {
+            Bmob.initBmob("2c9f0c5fbeb32f1b1bce828d29514f5d",
+                    "592b4d559540535e66ad45364913ec1f");
+        }
 
-            String str = Bmob.findPayOrder(orderId);
+        String str = Bmob.findPayOrder(orderId);
 
-            Pay order = (Pay) JSONObject.toBean(JSONObject.fromObject(str), Pay.class);
+        Pay order = (Pay) JSONObject.toBean(JSONObject.fromObject(str), Pay.class);
 
-            if (order != null && order.getTrade_state().equals("SUCCESS")) {
-                Pay dbOrder = payDao.getPay(orderId);
-                if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
-                    //可以增加会员
-                    payDao.save(order);
-                    setVip(ut.getDeviceId(), 1);
-                    return MyJSONUtil.getSuccessJsonObject();
-                } else {
-                    //不可以
-                    return MyJSONUtil.getErrorJsonObject();
-                }
+        if (order != null && order.getTrade_state().equals("SUCCESS")) {
+            Pay dbOrder = payDao.getPay(orderId);
+            if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
+                //可以增加会员
+                payDao.save(order);
+                setVip(ut.getDeviceId(), 1);
+                return MyJSONUtil.getSuccessJsonObject();
             } else {
-                return MyJSONUtil.getErrorInfoJsonObject(StringUtil.FAIL_PAY);
+                //不可以
+                return MyJSONUtil.getErrorJsonObject();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return MyJSONUtil.getErrorJsonObject();
+        } else {
+            throw new MyException(StringUtil.FAIL_PAY);
         }
     }
 
-    public void setVip(String deviceId, Integer month) {
+    public void setVip(String deviceId, Integer month) throws Exception{
         try {
             Vip vip = vipDao.getVipByDeviceIdAll(deviceId);
             if (month == null) {
@@ -183,6 +246,7 @@ public class UserServlet {
             vipDao.saveOrUpdate(vip);
             request.removeAttribute(deviceId);
         } catch (Exception e) {
+            throw new MyException(StringUtil.FAIL_PAY);
         }
     }
 
@@ -194,5 +258,32 @@ public class UserServlet {
         jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
         jo.put(ResultCode.INFO, JSONObject.fromObject(coinDao.getCoinById(id)));
         return jo;
+    }
+
+    @RequestMapping(value = "/deletealbum")
+    public
+    @ResponseBody
+    Object deleteAlbum(@RequestParam String ids) throws Exception{
+        try {
+            JSONArray list = JSONArray.fromObject(ids);
+            for (int i = 0; i < list.size(); i++) {
+                Album album = albumDao.queryById(list.getInt(i));
+                File file = new File("/mnt/" + album.getPath());
+                deleteThumb(file, MyUtil._320x320);
+                deleteThumb(file, MyUtil._640x640);
+                deleteThumb(file, "");
+                albumDao.deleteAlbumById(list.getInt(i));
+            }
+        } catch (Exception e) {
+            throw new Exception("删除失败");
+        }
+        return MyJSONUtil.getSuccessJsonObject();
+    }
+
+    void deleteThumb(File file, String str) {
+        File t = new File(file.getPath() + str);
+        if (t.exists()) {
+            t.delete();
+        }
     }
 }

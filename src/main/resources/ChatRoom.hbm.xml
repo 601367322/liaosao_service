@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="com.xl.bean.ChatRoom" table="chat_room" schema="xl_database">
+        <id name="id" type="java.lang.Integer">
+            <column name="id"/>
+            <generator class="native" />
+        </id>
+        <property name="deviceId" type="java.lang.String">
+            <column name="deviceId" length="50" not-null="true"/>
+        </property>
+        <property name="price" type="java.lang.Double">
+            <column name="price" precision="-1" not-null="true"/>
+        </property>
+        <property name="sex" type="java.lang.Integer">
+            <column name="sex" not-null="true"/>
+        </property>
+        <property name="minTime" type="java.lang.Integer">
+            <column name="minTime" not-null="true"/>
+        </property>
+        <property name="maxTime" type="java.lang.Integer">
+            <column name="maxTime" not-null="true"/>
+        </property>
+        <property name="createTime" type="java.util.Date">
+            <column name="createTime" not-null="true"/>
+        </property>
+    </class>
+</hibernate-mapping>

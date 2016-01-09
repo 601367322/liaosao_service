@@ -37,6 +37,7 @@ public class GroupMessageServlet {
     HttpServletRequest request;
     @Autowired
     HttpSession session;
+
     /**
      * 群聊
      *
@@ -46,35 +47,26 @@ public class GroupMessageServlet {
     @RequestMapping(value = "/groupchat")
     public
     @ResponseBody
-    Object groupChat(@RequestParam String deviceId) {
+    Object groupChat(@RequestParam String deviceId) throws Exception{
         JSONObject jo = new JSONObject();
-        try {
-            //从群组中先删除
-            HttpHelloWorldServerHandler.groupSessionMap.remove(deviceId);
-            //如果socket连接则添加到群组中
-            if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
-                UserTable ut = MyRequestUtil.getUserTable(session);//查询用户信息
-                if (ut == null) {
-                    jo.put(ResultCode.STATUS, ResultCode.FAIL);
-                    return jo;
+        //从群组中先删除
+        HttpHelloWorldServerHandler.groupSessionMap.remove(deviceId);
+        //如果socket连接则添加到群组中
+        if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
+            UserTable ut = MyRequestUtil.getUserTable(session);//查询用户信息
+            //通知全组人员有人进来了
+            for (String key : HttpHelloWorldServerHandler.groupSessionMap.keySet()) {
+                ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);
+                if (session != null) {
+                    JSONObject responseJson = new JSONObject();
+                    responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_GROUP_JOIN);
+                    responseJson.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(ut));
+                    session.writeAndFlush(responseJson.toString() + "\n");
                 }
-                //通知全组人员有人进来了
-                for (String key : HttpHelloWorldServerHandler.groupSessionMap.keySet()) {
-                    ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);
-                    if (session != null) {
-                        JSONObject responseJson = new JSONObject();
-                        responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_GROUP_JOIN);
-                        responseJson.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(ut));
-                        session.writeAndFlush(responseJson.toString() + "\n");
-                    }
-                }
-                //加入群组队列
-                HttpHelloWorldServerHandler.groupSessionMap.put(deviceId, HttpHelloWorldServerHandler.sessionMap.get(deviceId));
-                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
             }
-        } catch (Exception ex) {
-            jo.put(ResultCode.STATUS, ResultCode.FAIL);
-            ex.printStackTrace();
+            //加入群组队列
+            HttpHelloWorldServerHandler.groupSessionMap.put(deviceId, HttpHelloWorldServerHandler.sessionMap.get(deviceId));
+            jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
         }
         return jo;
     }
@@ -89,17 +81,12 @@ public class GroupMessageServlet {
     public
     @ResponseBody
     Object sendMessage(@RequestParam String content,
-                       @RequestParam(required = false) String deviceId) {
+                       @RequestParam(required = false) String deviceId) throws Exception {
         JSONObject jo = new JSONObject();
 
         System.out.println(content.toString());
 
         UserTable ut = MyRequestUtil.getUserTable(session);
-
-        if(ut==null){
-            jo.put(ResultCode.STATUS, ResultCode.FAIL);
-            return jo;
-        }
 
         JSONObject toJo = new JSONObject();
 

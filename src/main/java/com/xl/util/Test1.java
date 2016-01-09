@@ -26,7 +26,7 @@ public class Test1 {
     private static final String METHOD_POST = "POST";
     private static final String UTF8 = "UTF-8";
     public static void main(String[] args) {
-            HttpURLConnection conn = null;
+         /*   HttpURLConnection conn = null;
             String mURL = "http://www.bjqlr.com/admin/user/update_status.php?id=114073&status=0";
             try {
                 conn = connectionCommonSetting(conn, new URL(mURL), METHOD_POST);
@@ -35,7 +35,7 @@ public class Test1 {
                 conn.disconnect();
             } catch (Exception e){
                 e.printStackTrace();
-            }
+            }*/
     }
 
     private static HttpURLConnection connectionCommonSetting(HttpURLConnection conn, URL url, String method) throws IOException {

@@ -57,8 +57,7 @@ public class MessageServlet {
     public
     @ResponseBody
     Object sendMessage(@RequestParam String content,
-                       @RequestParam(required = false) String deviceId,
-                       @RequestParam(required = false) Integer sex) {
+                       @RequestParam(required = false) Integer sex) throws Exception {
         System.out.println(content.toString());
         MessageBean mb = (MessageBean) JSONObject.toBean(
                 JSONObject.fromObject(content), MessageBean.class);
@@ -392,7 +391,7 @@ public class MessageServlet {
             @RequestParam String deviceId, @RequestParam String toId,
             @RequestParam String msgType,
             @RequestParam(required = false) Integer sex,
-            @RequestParam(required = false) Integer voiceTime) {
+            @RequestParam(required = false) Integer voiceTime) throws Exception {
         JSONObject jo = new JSONObject();
         if (!file.isEmpty()) {
             String dir = "/mnt/" + toId;
@@ -434,11 +433,8 @@ public class MessageServlet {
                 jo.put(StaticUtil.TIME, new Date());
                 return jo;
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                jo.put(ResultCode.STATUS, ResultCode.FAIL);
+                throw new Exception("卧槽，上传失败");
             }
-            System.out.println("upload over. " + filename);
         } else {
             jo.put(ResultCode.STATUS, ResultCode.FAIL);
         }
@@ -563,57 +559,64 @@ public class MessageServlet {
     public
     @ResponseBody
     Object setUserDetail(@RequestParam String deviceId,
-                         @ModelAttribute UserBean user) {
+                         @ModelAttribute UserBean user) throws Exception {
         JSONObject jo = new JSONObject();
-        try {
-            UserTable userTable = userDao.getUserByDeviceId(deviceId);
-            if (userTable == null) {
-                userTable = new UserTable();
-                userTable.setDeviceId(deviceId);
-            }
-
-            UserBean userBean = null;
-            if (userTable.getDetail() == null
-                    || userTable.getDetail().equals("")) {
-                userBean = new UserBean();
-            } else {
-                userBean = (UserBean) JSONObject.toBean(
-                        JSONObject.fromObject(userTable.getDetail()),
-                        UserBean.class);
-            }
-            if (user != null) {
-                if (user.sex!= null) {
-                    if (userBean.sex != null) {
-                        jo.put(ResultCode.STATUS, ResultCode.FAIL);
-                        return jo;
-                    }
-                    userBean.sex = user.sex;
-                }
-                if (user.lat != null)
-                    userBean.lat = user.lat;
-                if (user.lng != null)
-                    userBean.lng = user.lng;
-                if (user.province != null)
-                    userBean.province = user.province;
-                if (user.city != null)
-                    userBean.city = user.city;
-                if (user.nickname != null)
-                    userBean.nickname = user.nickname;
-                if (user.birthday != null)
-                    userBean.birthday = user.birthday;
-                if (user.desc != null)
-                    userBean.desc = user.desc;
-            }
-            userTable.setDetail(MyUtil.toJson(userBean));
-
-            userDao.saveOrUpdate(userTable);
-            MyRequestUtil.setUserTable(session, userTable);
-            jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-            jo.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(userTable));
-        } catch (Exception e) {
-            jo.put(ResultCode.STATUS, ResultCode.FAIL);
-            jo.put(ResultCode.INFO, e.toString());
+        UserTable userTable = userDao.getUserByDeviceId(deviceId);
+        if (userTable == null) {
+            userTable = new UserTable();
+            userTable.setDeviceId(deviceId);
         }
+
+        UserBean userBean = null;
+        if (MyUtil.isEmpty(userTable.getDetail())) {
+            userBean = new UserBean();
+        } else {
+            userBean = (UserBean) JSONObject.toBean(
+                    JSONObject.fromObject(userTable.getDetail()),
+                    UserBean.class);
+        }
+        if (user != null) {
+            if (user.sex != null) {
+                if (userBean.sex != null) {
+                    jo.put(ResultCode.STATUS, ResultCode.FAIL);
+                    return jo;
+                }
+                userBean.sex = user.sex;
+            }
+            if (user.lat != null)
+                userBean.lat = user.lat;
+            if (user.lng != null)
+                userBean.lng = user.lng;
+            if (user.province != null)
+                userBean.province = user.province;
+            if (user.city != null)
+                userBean.city = user.city;
+            if (user.nickname != null) {
+                if (MyUtil.isOverStepLength(user.nickname, 16)) {
+                    throw new Exception("昵称不能超过8个汉字");
+                }
+                userBean.nickname = user.nickname;
+            }
+            if (user.birthday != null)
+                userBean.birthday = user.birthday;
+            if (user.desc != null) {
+                if (MyUtil.isOverStepLength(user.desc, 300)) {
+
+                    throw new Exception("个性签名不能超过150个汉字");
+                }
+                userBean.desc = user.desc;
+            }
+            if (user.zhifubao != null)
+                userBean.zhifubao = user.zhifubao;
+            if (user.weixin != null)
+                userBean.weixin = user.weixin;
+        }
+        userTable.setDetail(MyUtil.toJson(userBean));
+
+        userDao.saveOrUpdate(userTable);
+        MyRequestUtil.setUserTable(session, userTable);
+        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        jo.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(userTable));
         return jo;
     }
 

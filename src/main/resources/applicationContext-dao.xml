@@ -1,26 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-	<bean id="userDao" class="com.xl.dao.UserDao">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	
-	<bean id="unlineMessageDao" class="com.xl.dao.UnlineMessageDao">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
-	
-	<bean id="vipDao" class="com.xl.dao.VipDao">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="userDao" class="com.xl.dao.UserDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
-	<bean id="payDao" class="com.xl.dao.PayDao">
-		<property name="sessionFactory" ref="sessionFactory"></property>
-	</bean>
+    <bean id="unlineMessageDao" class="com.xl.dao.UnlineMessageDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="vipDao" class="com.xl.dao.VipDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="payDao" class="com.xl.dao.PayDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 
     <bean id="vipCoinDao" class="com.xl.dao.VipCoinDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="albumDao" class="com.xl.dao.AlbumDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="accountDao" class="com.xl.dao.AccountDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="chatRoomDao" class="com.xl.dao.ChatRoomDao">
         <property name="sessionFactory" ref="sessionFactory"></property>
     </bean>
 </beans>

@@ -41,8 +41,12 @@ public class SessionFilter extends OncePerRequestFilter {
         String deviceId = request.getParameter("deviceId");
         if (!MyUtil.isEmpty(deviceId)) {
             UserTable uts = null;
+            try {
+                uts = MyRequestUtil.getUserTable(request);
+            } catch (Exception e) {
+            }
             //如果session中不存在用户信息，则从数据库里查询放到session里
-            if ((uts = MyRequestUtil.getUserTable(request)) == null) {
+            if (uts == null) {
                 UserTable ut = userDao.getUserByDeviceId(deviceId);
                 if (ut != null) {
                     Vip vip = vipDao.getVipByDeviceId(deviceId);//查询vip信息

@@ -10,4 +10,6 @@ public class ResultCode {
 	public static final int DISCONNECT = -2;
 	public static final int SAVED = -3;
 	public static final int NOVIP = -4;
+
+    public static final String UNKNOW = "未知错误";
 }

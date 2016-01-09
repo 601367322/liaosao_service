@@ -1,6 +1,7 @@
 package com.xl.bean;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class UserBean implements Serializable{
 	public Integer sex;
@@ -14,10 +15,19 @@ public class UserBean implements Serializable{
     public String logo;
     public Long birthday;
     public String desc;
+    public String zhifubao;
+    public String weixin;
+    public List<Album> album;
 
-	
-	
-	public boolean isGirl() {
+    public List<Album> getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(List<Album> album) {
+        this.album = album;
+    }
+
+    public boolean isGirl() {
 		return girl;
 	}
 	public void setGirl(boolean girl) {
@@ -90,5 +100,21 @@ public class UserBean implements Serializable{
 
     public void setDesc(String desc) {
         this.desc = desc;
+    }
+
+    public String getZhifubao() {
+        return zhifubao;
+    }
+
+    public void setZhifubao(String zhifubao) {
+        this.zhifubao = zhifubao;
+    }
+
+    public String getWeixin() {
+        return weixin;
+    }
+
+    public void setWeixin(String weixin) {
+        this.weixin = weixin;
     }
 }
