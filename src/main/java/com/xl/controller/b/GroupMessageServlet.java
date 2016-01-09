@@ -97,7 +97,7 @@ public class GroupMessageServlet {
         toJo.put(StaticUtil.MSGTYPE, MessageBean.TEXT);
         toJo.put(StaticUtil.CHATTYPE, 1);
         toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-        toJo.put(StaticUtil.SEX, ut.getUserBean().sex);
+        toJo.put(StaticUtil.SEX, ut.gUserBean().sex);
 
         for (String key : HttpHelloWorldServerHandler.groupSessionMap.keySet()) {
             ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);

@@ -43,12 +43,12 @@ public class UserTable implements Serializable {
 		return this.detail;
 	}
 
-    public UserBean getUserBean(){
+    public UserBean gUserBean(){
         return (UserBean) JSONObject.toBean(
                 JSONObject.fromObject(detail), UserBean.class);
     }
 
-    public void setUserBean(UserBean userBean){
+    public void sUserBean(UserBean userBean){
         setDetail(JSONObject.fromObject(userBean,
                 DefaultDefaultValueProcessor.getJsonConfig()).toString());
     }

@@ -11,6 +11,7 @@ import com.xl.socket.StaticUtil;
 import com.xl.util.MyRequestUtil;
 import com.xl.util.ResultCode;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,12 +52,12 @@ public class LoginServlet {
             if (ut == null) {
                 ut = new UserTable(deviceId);
                 UserBean ub = new UserBean();
-                ut.setUserBean(ub);//设置用户的基本信息
+                ut.sUserBean(ub);//设置用户的基本信息
                 userDao.save(ut);
             }
 
             //获取VIP信息
-            UserBean ub = ut.getUserBean();
+            UserBean ub = ut.gUserBean();
             ub.setLogo(MyRequestUtil.getHost(request) + ub.getLogo());
             Vip vip = vipDao.getVipByDeviceId(deviceId);
             List<Album> albums = albumDao.getAlbumListByDevicdId(deviceId);
@@ -65,11 +66,14 @@ public class LoginServlet {
             }
             ub.setAlbum(albums);
             ub.setVip(vip == null ? false : true);
-            ut.setUserBean(ub);
+            ut.sUserBean(ub);
+
+            JsonConfig jsonConfig = new JsonConfig();
+            jsonConfig.
 
             //将用户信息放回
             jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-            jo.put(StaticUtil.CONTENT, ut);
+            jo.put(StaticUtil.CONTENT, JSONObject.fromObject(ut));
         } catch (Exception e) {
             e.printStackTrace();
             jo.put(ResultCode.STATUS, ResultCode.FAIL);

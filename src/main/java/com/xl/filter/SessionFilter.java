@@ -51,9 +51,9 @@ public class SessionFilter extends OncePerRequestFilter {
                 if (ut != null) {
                     Vip vip = vipDao.getVipByDeviceId(deviceId);//查询vip信息
                     if (vip != null) {
-                        UserBean ub = ut.getUserBean();
+                        UserBean ub = ut.gUserBean();
                         ub.setVip(true);
-                        ut.setUserBean(ub);
+                        ut.sUserBean(ub);
                     }
                     MyRequestUtil.setUserTable(request.getSession(),ut);
                 }

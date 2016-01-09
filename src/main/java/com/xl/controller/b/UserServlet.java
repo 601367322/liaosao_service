@@ -86,9 +86,9 @@ public class UserServlet {
                         });
 
                 //保存用户信息
-                UserBean ub = ut.getUserBean();
+                UserBean ub = ut.gUserBean();
                 ub.setLogo("logo/" + deviceId + "/" + filename);
-                ut.setUserBean(ub);
+                ut.sUserBean(ub);
                 userDao.update(ut);
 
                 if (oldFiles != null) {
