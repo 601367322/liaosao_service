@@ -43,13 +43,15 @@ public class LoginServlet {
     @ResponseBody
     Object getUserInfo(@RequestParam String deviceId) throws Exception {
         //先从数据库查询，如果没有，则创建一个用户
-        UserTable ut = userDao.getUserByDeviceId(deviceId);
-        if (ut == null) {
-            ut = new UserTable(deviceId);
+        UserTable newUt = userDao.getUserByDeviceId(deviceId);
+        if (newUt == null) {
+            newUt = new UserTable(deviceId);
             UserBean ub = new UserBean();
-            ut.setUserBean(ub);//设置用户的基本信息
-            userDao.save(ut);
+            newUt.setUserBean(ub);//设置用户的基本信息
+            userDao.save(newUt);
         }
+        //直接更改对象，会直接更改到缓存，从而会影响到其他地方
+        UserTable ut = (UserTable) newUt.clone();
 
         //获取VIP信息
         UserBean ub = ut.getUserBean();
