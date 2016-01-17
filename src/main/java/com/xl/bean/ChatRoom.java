@@ -1,11 +1,12 @@
 package com.xl.bean;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Shen on 2016/1/3.
  */
-public class ChatRoom {
+public class ChatRoom implements Serializable{
     private int id;
     private String deviceId;
     private Double price;
@@ -13,6 +14,16 @@ public class ChatRoom {
     private Integer minTime;
     private Integer maxTime;
     private Date createTime;
+
+    private UserTable user;
+
+    public UserTable getUser() {
+        return user;
+    }
+
+    public void setUser(UserTable user) {
+        this.user = user;
+    }
 
     public int getId() {
         return id;

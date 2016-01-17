@@ -5,11 +5,11 @@ import com.xl.bean.UserTable;
 import com.xl.dao.ChatRoomDao;
 import com.xl.util.MyJSONUtil;
 import com.xl.util.MyRequestUtil;
-import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
@@ -39,7 +39,14 @@ public class ChatRoomServlet {
         }
         chatRoom.setCreateTime(new Date());
         chatRoomDao.save(chatRoom);
-        JSONObject json = MyJSONUtil.getSuccessJsonObject(chatRoom);
-        return json;
+        return MyJSONUtil.getSuccessJsonObject(chatRoom);
+    }
+
+
+    @RequestMapping(value = "/roomlist")
+    public
+    @ResponseBody
+    Object getChatRoomList(@RequestParam int page) {
+        return MyJSONUtil.getSuccessJsonObject(chatRoomDao.findChatRoomByPage(page));
     }
 }

@@ -13,6 +13,8 @@ public class MyRequestUtil {
     //用户信息
     public static final String SESSION_TAG_USER = "session_user";
 
+    public static String HOST = null;
+
     /**
      * 获取网站域名
      *
@@ -20,9 +22,11 @@ public class MyRequestUtil {
      * @return
      */
     public static String getHost(HttpServletRequest request) {
-        StringBuffer url = request.getRequestURL();
-        String tempContextUrl = url.delete(url.length() - request.getRequestURI().length(), url.length()).append("/").toString();
-        return tempContextUrl;
+        if(HOST==null) {
+            StringBuffer url = request.getRequestURL();
+            HOST = url.delete(url.length() - request.getRequestURI().length(), url.length()).append("/").toString();
+        }
+        return HOST;
     }
 
     /**

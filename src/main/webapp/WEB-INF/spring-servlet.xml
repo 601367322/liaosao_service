@@ -8,8 +8,6 @@
 
     <context:component-scan base-package="com.xl"/>
 
-    <mvc:annotation-driven/>
-
     <!-- 启用spring mvc 注解 -->
     <context:annotation-config/>
 
@@ -18,25 +16,36 @@
 
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
 
+    <mvc:annotation-driven>
+        <mvc:message-converters register-defaults="true">
+            <bean class="org.springframework.http.converter.StringHttpMessageConverter">
+                <property name="supportedMediaTypes" value="text/plain;charset=UTF-8"/>
+            </bean>
+        </mvc:message-converters>
+    </mvc:annotation-driven>
+
     <!-- 完成请求和注解POJO的映射 -->
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
         <property name="messageConverters">
-            <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
-                <property name="supportedMediaTypes">
-                    <list>
-                        <value>text/plain;charset=utf-8</value>
-                        <value>text/html;charset=utf-8</value>
-                        <value>text/json;charset=utf-8</value>
-                        <value>application/json;charset=utf-8</value>
-                    </list>
-                </property>
-            </bean>
+            <list>
+                <bean class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+                    <property name="supportedMediaTypes">
+                        <list>
+                            <value>text/plain;charset=utf-8</value>
+                            <value>text/html;charset=utf-8</value>
+                            <value>text/json;charset=utf-8</value>
+                            <value>application/json;charset=utf-8</value>
+                        </list>
+                    </property>
+                </bean>
+            </list>
+
         </property>
     </bean>
 
     <!-- 对转向页面的路径解析。prefix：前缀， suffix：后缀 -->
     <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver"
-            p:prefix="/WEB-INF/pages/" p:suffix=".jsp"/>
+          p:prefix="/WEB-INF/pages/" p:suffix=".jsp"/>
 
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver"

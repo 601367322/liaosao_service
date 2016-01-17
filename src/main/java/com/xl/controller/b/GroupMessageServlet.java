@@ -10,7 +10,6 @@ import com.xl.util.MyRequestUtil;
 import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
 import io.netty.channel.ChannelHandlerContext;
-import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +20,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Shen on 2015/9/7.
@@ -47,8 +48,8 @@ public class GroupMessageServlet {
     @RequestMapping(value = "/groupchat")
     public
     @ResponseBody
-    Object groupChat(@RequestParam String deviceId) throws Exception{
-        JSONObject jo = new JSONObject();
+    Object groupChat(@RequestParam String deviceId) throws Exception {
+        Map<String, Object> jo = new HashMap<String, Object>();
         //从群组中先删除
         HttpHelloWorldServerHandler.groupSessionMap.remove(deviceId);
         //如果socket连接则添加到群组中
@@ -58,9 +59,9 @@ public class GroupMessageServlet {
             for (String key : HttpHelloWorldServerHandler.groupSessionMap.keySet()) {
                 ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);
                 if (session != null) {
-                    JSONObject responseJson = new JSONObject();
+                    Map<String, Object> responseJson = new HashMap<String, Object>();
                     responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_GROUP_JOIN);
-                    responseJson.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(ut));
+                    responseJson.put(StaticUtil.CONTENT, ut);
                     session.writeAndFlush(responseJson.toString() + "\n");
                 }
             }
@@ -82,13 +83,13 @@ public class GroupMessageServlet {
     @ResponseBody
     Object sendMessage(@RequestParam String content,
                        @RequestParam(required = false) String deviceId) throws Exception {
-        JSONObject jo = new JSONObject();
+        Map<String, Object> jo = new HashMap<String, Object>();
 
         System.out.println(content.toString());
 
         UserTable ut = MyRequestUtil.getUserTable(session);
 
-        JSONObject toJo = new JSONObject();
+        Map<String, Object> toJo = new HashMap<String, Object>();
 
         toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
         toJo.put(StaticUtil.FROMID, deviceId);
@@ -97,7 +98,7 @@ public class GroupMessageServlet {
         toJo.put(StaticUtil.MSGTYPE, MessageBean.TEXT);
         toJo.put(StaticUtil.CHATTYPE, 1);
         toJo.put(StaticUtil.TIME, MyUtil.dateFormat.format(new Date()));
-        toJo.put(StaticUtil.SEX, ut.gUserBean().sex);
+        toJo.put(StaticUtil.SEX, ut.getUserBean().sex);
 
         for (String key : HttpHelloWorldServerHandler.groupSessionMap.keySet()) {
             ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);

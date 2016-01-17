@@ -1,13 +1,31 @@
 package com.xl.dao;
 
 import com.xl.bean.Pay;
+import org.springframework.cache.annotation.Cacheable;
 
 /**
  * Created by Shen on 2015/10/10.
  */
-public class PayDao extends BaseDao {
+public class PayDao extends BaseDao<Pay> {
 
+    @Cacheable(value = "Pay",key = "#orderId")
     public Pay getPay(String orderId) {
         return getHibernateTemplate().get(Pay.class, orderId);
+    }
+
+    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @Override
+    public Object save(Pay obj) throws Exception {
+        return super.save(obj);
+    }
+    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @Override
+    public void saveOrUpdate(Pay obj) throws Exception {
+        super.saveOrUpdate(obj);
+    }
+    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @Override
+    public void update(Pay obj) throws Exception {
+        super.update(obj);
     }
 }

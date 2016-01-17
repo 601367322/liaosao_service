@@ -1,7 +1,6 @@
 package com.xl.bean;
 
-import com.xl.util.DefaultDefaultValueProcessor;
-import net.sf.json.JSONObject;
+import com.xl.util.MyJSONUtil;
 
 import java.io.Serializable;
 
@@ -43,14 +42,12 @@ public class UserTable implements Serializable {
 		return this.detail;
 	}
 
-    public UserBean gUserBean(){
-        return (UserBean) JSONObject.toBean(
-                JSONObject.fromObject(detail), UserBean.class);
+    public UserBean getUserBean(){
+        return MyJSONUtil.jsonToBean(detail,UserBean.class);
     }
 
-    public void sUserBean(UserBean userBean){
-        setDetail(JSONObject.fromObject(userBean,
-                DefaultDefaultValueProcessor.getJsonConfig()).toString());
+    public void setUserBean(UserBean userBean){
+        setDetail(MyJSONUtil.beanToJson(userBean).toString());
     }
 
 	public void setDetail(String detail) {

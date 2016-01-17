@@ -6,14 +6,9 @@ import com.xl.dao.UserDao;
 import com.xl.dao.VipDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
-import com.xl.util.DefaultDefaultValueProcessor;
-import com.xl.util.MyRequestUtil;
-import com.xl.util.MyUtil;
-import com.xl.util.ResultCode;
+import com.xl.util.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -59,10 +54,10 @@ public class MessageServlet {
     Object sendMessage(@RequestParam String content,
                        @RequestParam(required = false) Integer sex) throws Exception {
         System.out.println(content.toString());
-        MessageBean mb = (MessageBean) JSONObject.toBean(
-                JSONObject.fromObject(content), MessageBean.class);
-        JSONObject jo = new JSONObject();
-        JSONObject toJo = new JSONObject();
+        MessageBean mb = MyJSONUtil.jsonToBean(content, MessageBean.class);
+
+        Map<String, Object> jo = new HashMap<String, Object>();
+        Map<String, Object> toJo = new HashMap<String, Object>();
         toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
         toJo.put(StaticUtil.FROMID, mb.getFromId());
         toJo.put(StaticUtil.TOID, mb.getToId());
@@ -77,11 +72,11 @@ public class MessageServlet {
             ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
                     .get(mb.getToId());// 获取对方session
 
-            session.writeAndFlush(toJo.toString() + "\n");
+            session.writeAndFlush(MyJSONUtil.beanToJson(toJo) + "\n");
 
         } else {
             unlineMessageDao.save(new UnlineMessage(mb.getFromId(), mb
-                    .getToId(), toJo.toString()));
+                    .getToId(), MyJSONUtil.beanToJson(toJo).toString()));
         }
         jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
         jo.put(StaticUtil.TIME, new Date());
@@ -99,34 +94,37 @@ public class MessageServlet {
             RequestMethod.POST})
     public
     @ResponseBody
-    Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
-                     @RequestParam(required = false) Integer sex) {
-        JSONObject jo = new JSONObject();
+    Object joinQueue(@RequestParam String deviceId, @RequestParam(required = false) Integer sex) throws Exception {
         System.out.println("joinQueueqweqweqweqwe\t" + deviceId);
 
+        Map<String, Object> jo = new HashMap<String, Object>();
+
+        //加入之前先删除以前的队列
         HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
         HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
 
+        //如果已连接socket
         if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
             System.out.println("containsKey\t" + deviceId);
 
             ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
                     .get(deviceId);
             mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
+            //得到session，并且将性别存储
 
             ChannelHandlerContext otherSession = null;
             String otherDeviceId = null;
 
+            //优先匹配vip
             LinkedHashMap<String, ChannelHandlerContext> mapVip = HttpHelloWorldServerHandler.queueSessionMapVip;
 
             for (String key : mapVip.keySet()) {
-                if (!key.equals(deviceId)) {
+                if (!key.equals(deviceId)) {//如果不是自己
                     ChannelHandlerContext session = mapVip.get(key);// 得到对方的session
-                    int session_sex = (Integer) session.attr(
-                            AttributeKey.valueOf(StaticUtil.SEX)).get();
-                    int session_wantSex = (Integer) session.attr(
-                            AttributeKey.valueOf(StaticUtil.WANTSEX)).get();
-
+                    //得到对方想匹配的性别
+                    int session_wantSex = (Integer) session.attr(AttributeKey.valueOf(StaticUtil.WANTSEX)).get();
+                    //如果对方相匹配的性别与我的性别相符
+                    //则配对成功
                     if (session_wantSex == sex) {
                         otherSession = session;
                         otherDeviceId = key;
@@ -134,13 +132,12 @@ public class MessageServlet {
                 }
             }
 
+            //如果没有找到vip配对，则进行普通配对
             if (otherSession == null) {
                 LinkedHashMap<String, ChannelHandlerContext> map = HttpHelloWorldServerHandler.queueSessionMap;
                 for (String key : map.keySet()) {
-                    if (!key.equals(deviceId)) {
+                    if (!key.equals(deviceId)) {//随便找人配对
                         ChannelHandlerContext session = map.get(key);// 得到对方的session
-                        int session_sex = (Integer) session.attr(
-                                AttributeKey.valueOf(StaticUtil.SEX)).get();
 
                         otherSession = session;
                         otherDeviceId = key;
@@ -148,44 +145,46 @@ public class MessageServlet {
                 }
             }
 
+            //如果还是找不到人，则进入等待队列
             if (otherSession == null) {
                 System.out.println("queueSessionMap\tunContainsKey\t"
                         + deviceId);
                 HttpHelloWorldServerHandler.queueSessionMap.put(deviceId,
                         mySession);
                 jo.put(ResultCode.STATUS, ResultCode.LOADING);
-            } else {
-                System.out.println("queueSessionMap\tcontainsKey\t"
-                        + otherDeviceId);
-
-                /** 将id添加到各自的session中 **/
-                setAttribute(otherSession, deviceId);
-                setAttribute(mySession, otherDeviceId);
-
-                HttpHelloWorldServerHandler.queueSessionMap
-                        .remove(otherDeviceId);// 从队列中移除
-                HttpHelloWorldServerHandler.queueSessionMapVip
-                        .remove(otherDeviceId);// 从队列中移除
-
-                JSONObject toJo = new JSONObject();
-                toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
-                toJo.put(StaticUtil.SEX,
-                        mySession.attr(AttributeKey.valueOf(StaticUtil.SEX))
-                                .get());
-                toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
-                otherSession.writeAndFlush(toJo.toString() + "\n");// 通知对方
-
-                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-                jo.put(StaticUtil.SEX,
-                        otherSession.attr(AttributeKey.valueOf(StaticUtil.SEX))
-                                .get());
-                jo.put(StaticUtil.OTHERDEVICEID, otherDeviceId);
+            } else {//如果找到人了
+                jo = matchSuccess(deviceId, jo, mySession, otherSession, otherDeviceId);
             }
-
+            return MyJSONUtil.beanToJson(jo);
         } else {
-            System.out.println("unContainsKey\t" + deviceId);
-            jo.put(ResultCode.STATUS, ResultCode.FAIL);
+            throw new Exception("请重新登录");
         }
+    }
+
+    private Map<String, Object> matchSuccess(@RequestParam String deviceId, Map<String, Object> jo, ChannelHandlerContext mySession, ChannelHandlerContext otherSession, String otherDeviceId) {
+        System.out.println("queueSessionMap\tcontainsKey\t" + otherDeviceId);
+
+        //将聊天对象的id添加到各自的session中
+        setAttribute(otherSession, deviceId);
+        setAttribute(mySession, otherDeviceId);
+
+        // 从队列中移除
+        HttpHelloWorldServerHandler.queueSessionMap.remove(otherDeviceId);
+        // 从队列中移除
+        HttpHelloWorldServerHandler.queueSessionMapVip.remove(otherDeviceId);
+
+        //给匹配到的对方发送消息
+        Map<String, Object> toJo = new HashMap<String, Object>();
+        toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
+        toJo.put(StaticUtil.SEX, mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
+        toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
+        otherSession.writeAndFlush(toJo.toString() + "\n");// 通知对方
+
+        //返回成功
+        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
+        jo.put(StaticUtil.SEX, otherSession.attr(AttributeKey.valueOf(StaticUtil.SEX)).get());
+        jo.put(StaticUtil.OTHERDEVICEID, otherDeviceId);
+
         return jo;
     }
 
@@ -203,40 +202,45 @@ public class MessageServlet {
     Object joinQueue(HttpServletRequest request, @RequestParam String deviceId,
                      @RequestParam(required = false) Integer sex,
                      @RequestParam(required = false) Integer wantSex) {
-        JSONObject jo = new JSONObject();
+
+        Map<String, Object> jo = new HashMap<String, Object>();
         System.out.println("joinQueue\t" + deviceId);
 
+        //加入之前先删除以前的队列
         HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
         HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
 
+        //判断是否为vip
         Vip vip = vipDao.getVipByDeviceId(deviceId);
         if (vip == null) {
             jo.put(ResultCode.STATUS, ResultCode.NOVIP);
             return jo;
         }
 
+        //如果已经连接socket
         if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
             System.out.println("containsKey\t" + deviceId);
 
-            ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap
-                    .get(deviceId);
+            //获取到session
+            ChannelHandlerContext mySession = HttpHelloWorldServerHandler.sessionMap.get(deviceId);
+
+            //将自己的性别和想要匹配的性别存储
             mySession.attr(AttributeKey.valueOf(StaticUtil.SEX)).set(sex);
-            mySession.attr(AttributeKey.valueOf(StaticUtil.WANTSEX)).set(
-                    wantSex);
+            mySession.attr(AttributeKey.valueOf(StaticUtil.WANTSEX)).set(wantSex);
 
             ChannelHandlerContext otherSession = null;
             String otherDeviceId = null;
 
+            //先从vip中寻找匹配对象
             LinkedHashMap<String, ChannelHandlerContext> mapVip = HttpHelloWorldServerHandler.queueSessionMapVip;
 
             for (String key : mapVip.keySet()) {
                 if (!key.equals(deviceId)) {
                     ChannelHandlerContext session = mapVip.get(key);// 得到对方的session
-                    int session_sex = (Integer) session.attr(
-                            AttributeKey.valueOf(StaticUtil.SEX)).get();
-                    int session_wantSex = (Integer) session.attr(
-                            AttributeKey.valueOf(StaticUtil.WANTSEX)).get();
-
+                    //得到对方性别和对方想要性别
+                    int session_sex = (Integer) session.attr(AttributeKey.valueOf(StaticUtil.SEX)).get();
+                    int session_wantSex = (Integer) session.attr(AttributeKey.valueOf(StaticUtil.WANTSEX)).get();
+                    //判断对方性别是否是自己的想要的，并且对方想要的性别是否是自己的性别
                     if (session_sex == wantSex && session_wantSex == sex) {
                         otherSession = session;
                         otherDeviceId = key;
@@ -244,14 +248,14 @@ public class MessageServlet {
                 }
             }
 
+            //如果没找到，就从普通列表找人
             if (otherSession == null) {
                 LinkedHashMap<String, ChannelHandlerContext> map = HttpHelloWorldServerHandler.queueSessionMap;
                 for (String key : map.keySet()) {
                     if (!key.equals(deviceId)) {
                         ChannelHandlerContext session = map.get(key);// 得到对方的session
-                        int session_sex = (Integer) session.attr(
-                                AttributeKey.valueOf(StaticUtil.SEX)).get();
-
+                        int session_sex = (Integer) session.attr(AttributeKey.valueOf(StaticUtil.SEX)).get();
+                        //判断是不是自己想要匹配的性别
                         if (session_sex == wantSex) {
                             otherSession = session;
                             otherDeviceId = key;
@@ -260,45 +264,19 @@ public class MessageServlet {
                 }
             }
 
+            //如果依然没有匹配到，则进入等待列表
             if (otherSession == null) {
-                System.out.println("queueSessionMap\tunContainsKey\t"
-                        + deviceId);
-                HttpHelloWorldServerHandler.queueSessionMapVip.put(deviceId,
-                        mySession);
+                System.out.println("queueSessionMap\tunContainsKey\t" + deviceId);
+                HttpHelloWorldServerHandler.queueSessionMapVip.put(deviceId, mySession);
                 jo.put(ResultCode.STATUS, ResultCode.LOADING);
             } else {
-                System.out.println("queueSessionMap\tcontainsKey\t"
-                        + otherDeviceId);
-
-                /** 将id添加到各自的session中 **/
-                setAttribute(otherSession, deviceId);
-                setAttribute(mySession, otherDeviceId);
-
-                HttpHelloWorldServerHandler.queueSessionMap
-                        .remove(otherDeviceId);// 从队列中移除
-                HttpHelloWorldServerHandler.queueSessionMapVip
-                        .remove(otherDeviceId);// 从队列中移除
-
-                JSONObject toJo = new JSONObject();
-                toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CONNECT_CHAT);
-                toJo.put(StaticUtil.SEX,
-                        mySession.attr(AttributeKey.valueOf(StaticUtil.SEX))
-                                .get());
-                toJo.put(StaticUtil.OTHERDEVICEID, deviceId);
-                otherSession.writeAndFlush(toJo.toString() + "\n");// 通知对方
-
-                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-                jo.put(StaticUtil.SEX,
-                        otherSession.attr(AttributeKey.valueOf(StaticUtil.SEX))
-                                .get());
-                jo.put(StaticUtil.OTHERDEVICEID, otherDeviceId);
+                jo = matchSuccess(deviceId, jo, mySession, otherSession, otherDeviceId);
             }
-
+            return MyJSONUtil.beanToJson(jo);
         } else {
             System.out.println("unContainsKey\t" + deviceId);
-            jo.put(ResultCode.STATUS, ResultCode.FAIL);
+            return MyJSONUtil.getErrorJsonObject();
         }
-        return jo;
     }
 
     /**
@@ -315,16 +293,14 @@ public class MessageServlet {
         System.out.println("exitQueue" + deviceId);
         HttpHelloWorldServerHandler.queueSessionMap.remove(deviceId);
         HttpHelloWorldServerHandler.queueSessionMapVip.remove(deviceId);
-        JSONObject jo = new JSONObject();
-        jo.put(ResultCode.STATUS, ResultCode.LOADING);
-        return jo;
+        return MyJSONUtil.getSuccessJsonObject();
     }
 
     @RequestMapping(value = "/closechat")
     public
     @ResponseBody
     Object closeChat(@RequestParam String deviceId) {
-        JSONObject jo = new JSONObject();
+        Map<String, Object> jo = new HashMap<String, Object>();
         if (HttpHelloWorldServerHandler.sessionMap.containsKey(deviceId)) {
             ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
                     .get(deviceId);
@@ -337,10 +313,10 @@ public class MessageServlet {
                     if (temp != null) {
                         temp.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(
                                 null);
-                        JSONObject toJo = new JSONObject();
+                        Map<String, Object> toJo = new HashMap<String, Object>();
                         toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_CLOSE_CHAT);
                         toJo.put(StaticUtil.DEVICEID, deviceId);
-                        temp.writeAndFlush(toJo.toString() + "\n");// 通知对方
+                        temp.writeAndFlush(MyJSONUtil.beanToJson(toJo + "\n"));// 通知对方
                     }
                 }
                 session.attr(AttributeKey.valueOf(StaticUtil.IDS)).set(null);
@@ -392,7 +368,8 @@ public class MessageServlet {
             @RequestParam String msgType,
             @RequestParam(required = false) Integer sex,
             @RequestParam(required = false) Integer voiceTime) throws Exception {
-        JSONObject jo = new JSONObject();
+
+        Map<String, Object> jo = new HashMap<String, Object>();
         if (!file.isEmpty()) {
             String dir = "/mnt/" + toId;
             String filename = file.getOriginalFilename();
@@ -403,14 +380,14 @@ public class MessageServlet {
                 String content = filename;
                 if (thumb != null) {
                     FileUtils.writeByteArrayToFile(new File(dir, thumb.getOriginalFilename()), thumb.getBytes());
-                    JSONObject radioBean = new JSONObject();
+                    Map<String, Object> radioBean = new HashMap<String, Object>();
                     radioBean.put("file", filename);
                     radioBean.put("thumb", thumb.getOriginalFilename());
-                    content = "\"" + radioBean + "\"";
+                    content = MyJSONUtil.beanToJson(radioBean).toString();
                 }
 
                 // //////////////
-                JSONObject toJo = new JSONObject();
+                Map<String, Object> toJo = new HashMap<String, Object>();
                 toJo.put(StaticUtil.ORDER, StaticUtil.ORDER_SENDMESSAGE);
                 toJo.put(StaticUtil.FROMID, deviceId);
                 toJo.put(StaticUtil.TOID, toId);
@@ -424,10 +401,10 @@ public class MessageServlet {
                 if (HttpHelloWorldServerHandler.sessionMap.containsKey(toId)) {// 查看对方是否连接
                     ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap
                             .get(toId);// 获取对方session
-                    session.writeAndFlush(toJo.toString() + "\n");
+                    session.writeAndFlush(MyJSONUtil.beanToJson(toJo) + "\n");
                 } else {
                     unlineMessageDao.save(new UnlineMessage(deviceId, toId,
-                            toJo.toString()));
+                            MyJSONUtil.beanToJson(toJo).toString()));
                 }
                 jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
                 jo.put(StaticUtil.TIME, new Date());
@@ -466,26 +443,19 @@ public class MessageServlet {
     @RequestMapping(value = "/getallmessage")
     public
     @ResponseBody
-    Object getAllMyMessage(@RequestParam String deviceId) {
-        JSONObject jo = new JSONObject();
+    Object getAllMyMessage(@RequestParam String deviceId) throws Exception {
         List<UnlineMessage> list = unlineMessageDao
                 .getMyUnlineMessage(deviceId);
-        unlineMessageDao.deleteAll(list);
-        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-        jo.put(StaticUtil.CONTENT, JSONArray.fromObject(list));
-        return jo;
+        unlineMessageDao.deleteAll(MyRequestUtil.getUserTable(session).getDeviceId(), list);
+        return MyJSONUtil.getSuccessJsonObject(list);
     }
 
     @RequestMapping(value = "/isvip")
     public
     @ResponseBody
     Object isVip(@RequestParam String deviceId) {
-        JSONObject jo = new JSONObject();
-        Vip vip = vipDao
-                .getVipByDeviceId(deviceId);
-        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-        jo.put(StaticUtil.CONTENT, vip);
-        return jo;
+        Vip vip = vipDao.getVipByDeviceId(deviceId);
+        return MyJSONUtil.getSuccessJsonObject(vip);
     }
 
     /**
@@ -501,7 +471,7 @@ public class MessageServlet {
     Object setVip(@RequestParam String deviceId,
                   @RequestParam(required = false) Integer month,
                   @RequestParam(required = false) Boolean girl) {
-        JSONObject jo = new JSONObject();
+        Map<String, Object> jo = new HashMap<String, Object>();
         try {
             Vip vip = vipDao
                     .getVipByDeviceIdAll(deviceId);
@@ -530,13 +500,9 @@ public class MessageServlet {
             if (girl != null && girl) {
                 UserTable ut = userDao.getUserByDeviceId(deviceId);
                 if (ut != null) {
-                    UserBean ub = (UserBean) JSONObject.toBean(
-                            JSONObject.fromObject(ut.getDetail()),
-                            UserBean.class);
+                    UserBean ub = ut.getUserBean();
                     ub.setGirl(true);
-                    ut.setDetail(JSONObject.fromObject(ub,
-                            DefaultDefaultValueProcessor.getJsonConfig())
-                            .toString());
+                    ut.setUserBean(ub);
                     userDao.update(ut);
                 }
             }
@@ -560,7 +526,7 @@ public class MessageServlet {
     @ResponseBody
     Object setUserDetail(@RequestParam String deviceId,
                          @ModelAttribute UserBean user) throws Exception {
-        JSONObject jo = new JSONObject();
+        Map<String, Object> jo = new HashMap<String, Object>();
         UserTable userTable = userDao.getUserByDeviceId(deviceId);
         if (userTable == null) {
             userTable = new UserTable();
@@ -571,9 +537,7 @@ public class MessageServlet {
         if (MyUtil.isEmpty(userTable.getDetail())) {
             userBean = new UserBean();
         } else {
-            userBean = (UserBean) JSONObject.toBean(
-                    JSONObject.fromObject(userTable.getDetail()),
-                    UserBean.class);
+            userBean = userTable.getUserBean();
         }
         if (user != null) {
             if (user.sex != null) {
@@ -611,13 +575,11 @@ public class MessageServlet {
             if (user.weixin != null)
                 userBean.weixin = user.weixin;
         }
-        userTable.setDetail(MyUtil.toJson(userBean));
+        userTable.setUserBean(userBean);
 
         userDao.saveOrUpdate(userTable);
         MyRequestUtil.setUserTable(session, userTable);
-        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-        jo.put(StaticUtil.CONTENT, MyUtil.toJsonNoNull(userTable));
-        return jo;
+        return MyJSONUtil.getSuccessJsonObject(userTable);
     }
 
 

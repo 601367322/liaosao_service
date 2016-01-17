@@ -3,13 +3,10 @@ package com.xl.controller.b;
 import com.xl.bean.*;
 import com.xl.dao.*;
 import com.xl.exception.MyException;
-import com.xl.socket.StaticUtil;
 import com.xl.util.*;
 import net.coobird.thumbnailator.ThumbnailParameter;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.name.Rename;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,6 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Shen on 2015/9/19.
@@ -58,7 +56,6 @@ public class UserServlet {
     public
     @ResponseBody
     Object uploadLogo(@RequestParam("file") MultipartFile file, @RequestParam String deviceId) throws Exception {
-        JSONObject jo = new JSONObject();
         if (!file.isEmpty()) {
             UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
             if (ut == null) {
@@ -86,9 +83,9 @@ public class UserServlet {
                         });
 
                 //保存用户信息
-                UserBean ub = ut.gUserBean();
+                UserBean ub = ut.getUserBean();
                 ub.setLogo("logo/" + deviceId + "/" + filename);
-                ut.sUserBean(ub);
+                ut.setUserBean(ub);
                 userDao.update(ut);
 
                 if (oldFiles != null) {
@@ -100,18 +97,15 @@ public class UserServlet {
                 }
 
                 //返回地址http://host/img/deviceId/logo_.jpg
-                jo.put("logo", MyRequestUtil.getHost(request) + ub.getLogo());
-                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-                return jo;
+                return MyJSONUtil.getSuccessJsonObject("logo", MyRequestUtil.getHost(request) + ub.getLogo());
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                jo = MyJSONUtil.getErrorJsonObject();
+                throw new Exception("上传失败，请重试");
             }
         } else {
-            jo = MyJSONUtil.getErrorJsonObject();
+            throw new Exception("上传失败，请重试");
         }
-        return jo;
     }
 
     /**
@@ -125,7 +119,6 @@ public class UserServlet {
     public
     @ResponseBody
     Object uploadAlbum(@RequestParam("file") MultipartFile file, @RequestParam String deviceId) throws Exception {
-        JSONObject jo = new JSONObject();
         if (!file.isEmpty()) {
             UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
             if (ut == null) {
@@ -151,18 +144,15 @@ public class UserServlet {
 
                 album.setPath(MyRequestUtil.getHost(request) + album.getPath());
                 //返回地址http://host/img/deviceId/logo_.jpg
-                jo.put(StaticUtil.CONTENT, album);
-                jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-                return jo;
+                return MyJSONUtil.getSuccessJsonObject(album);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                jo = MyJSONUtil.getErrorJsonObject();
+                throw new Exception("上传失败，请重试");
             }
         } else {
-            jo = MyJSONUtil.getErrorJsonObject();
+            throw new Exception("上传失败，请重试");
         }
-        return jo;
     }
 
     public void thumb(File file, int width) {
@@ -200,7 +190,7 @@ public class UserServlet {
 
         String str = Bmob.findPayOrder(orderId);
 
-        Pay order = (Pay) JSONObject.toBean(JSONObject.fromObject(str), Pay.class);
+        Pay order = MyJSONUtil.jsonToBean(str, Pay.class);
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
@@ -218,7 +208,7 @@ public class UserServlet {
         }
     }
 
-    public void setVip(String deviceId, Integer month) throws Exception{
+    public void setVip(String deviceId, Integer month) throws Exception {
         try {
             Vip vip = vipDao.getVipByDeviceIdAll(deviceId);
             if (month == null) {
@@ -254,25 +244,22 @@ public class UserServlet {
     public
     @ResponseBody
     Object vipDetail(@RequestParam Integer id) {
-        JSONObject jo = new JSONObject();
-        jo.put(ResultCode.STATUS, ResultCode.SUCCESS);
-        jo.put(ResultCode.INFO, JSONObject.fromObject(coinDao.getCoinById(id)));
-        return jo;
+        return MyJSONUtil.getSuccessJsonObject(ResultCode.INFO, coinDao.getCoinById(id));
     }
 
     @RequestMapping(value = "/deletealbum")
     public
     @ResponseBody
-    Object deleteAlbum(@RequestParam String ids) throws Exception{
+    Object deleteAlbum(@RequestParam String ids) throws Exception {
         try {
-            JSONArray list = JSONArray.fromObject(ids);
+            List<Integer> list = MyJSONUtil.jsonToList(ids, Integer.class);
             for (int i = 0; i < list.size(); i++) {
-                Album album = albumDao.queryById(list.getInt(i));
+                Album album = albumDao.queryById(MyRequestUtil.getUserTable(session).getDeviceId(),list.get(i));
                 File file = new File("/mnt/" + album.getPath());
                 deleteThumb(file, MyUtil._320x320);
                 deleteThumb(file, MyUtil._640x640);
                 deleteThumb(file, "");
-                albumDao.deleteAlbumById(list.getInt(i));
+                albumDao.deleteAlbumById(MyRequestUtil.getUserTable(session).getDeviceId(),list.get(i));
             }
         } catch (Exception e) {
             throw new Exception("删除失败");

@@ -1,81 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
        xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
-	xsi:schemaLocation="http://www.springframework.org/schema/task
-	http://www.springframework.org/schema/task/spring-task-3.2.xsd
-	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
 
 
-	<context:property-placeholder location="classpath:/hibernate.properties" />
+    <context:property-placeholder location="classpath:/hibernate.properties"/>
 
-	<bean id="sessionFactory"
-		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
-		<property name="dataSource" ref="dataSource" />
-		<property name="hibernateProperties">
-			<props>
-				<prop key="hibernate.dialect">${dataSource.dialect}</prop>
-				<prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>
-				<prop key="hibernate.show_sql">true</prop>
-				<prop key="hibernate.format_sql">false</prop>
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.dialect">${dataSource.dialect}</prop>
+                <!--<prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>-->
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">false</prop>
+                <!--&lt;!&ndash; 配置二级缓存 &ndash;&gt;
+                <prop key="hibernate.cache.use_second_level_cache">true</prop>
+                &lt;!&ndash; 由于查询的缓存&ndash;&gt;
+                <prop key="hibernate.cache.use_query_cache">true</prop>
+                &lt;!&ndash; 配置二级缓存的相应的类 &ndash;&gt;
+                <prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory</prop>
+                <prop key="hibernate.cache.provider_configuration_file_resource_path">ehcache.xml</prop>
+
+                <prop key="hibernate.cache.use_structured_entries">true</prop>
+                <prop key="hibernate.current_session_context_class">org.springframework.orm.hibernate4.SpringSessionContext</prop>-->
             </props>
-		</property>
+        </property>
 
-		<property name="mappingResources">
-			<list>
-				<value>UserTable.hbm.xml</value>
-				<value>UnlineMessage.hbm.xml</value>
-				<value>Vip.hbm.xml</value>
-				<value>Pay.hbm.xml</value>
+        <property name="mappingResources">
+            <list>
+                <value>UserTable.hbm.xml</value>
+                <value>UnlineMessage.hbm.xml</value>
+                <value>Vip.hbm.xml</value>
+                <value>Pay.hbm.xml</value>
                 <value>VipCoin.hbm.xml</value>
                 <value>Album.hbm.xml</value>
                 <value>Account.hbm.xml</value>
                 <value>ChatRoom.hbm.xml</value>
             </list>
-		</property>
-	</bean>
+        </property>
+    </bean>
 
     <bean id="exceptionResolver" class="com.xl.exception.MyExceptionHandler"/>
 
-	<bean id="transactionManager"
-		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-		<property name="sessionFactory" ref="sessionFactory" />
-		<property name="dataSource" ref="dataSource" />
-	</bean>
+    <bean id="transactionManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
 
-	<bean id="dataSource"
-		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-		<property name="driverClassName" value="${dataSource.driverClassName}" />
-		<property name="url" value="${dataSource.url}" />
-		<property name="username" value="${dataSource.username}" />
-		<property name="password" value="${dataSource.password}" />
-	</bean>
+    <bean id="dataSource"
+          class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${dataSource.driverClassName}"/>
+        <property name="url" value="${dataSource.url}"/>
+        <property name="username" value="${dataSource.username}"/>
+        <property name="password" value="${dataSource.password}"/>
+    </bean>
 
-	<tx:advice id="txAdvice" transaction-manager="transactionManager">
-		<tx:attributes>
-			<tx:method name="get*" read-only="false" propagation="NOT_SUPPORTED" />
-			<tx:method name="find*" read-only="false" propagation="NOT_SUPPORTED" />
-			<tx:method name="save*" propagation="REQUIRED" />
-			<tx:method name="update*" propagation="REQUIRED" />
-			<tx:method name="delete*" propagation="REQUIRED" />
-		</tx:attributes>
-	</tx:advice>
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+            <tx:method name="get*" read-only="false" propagation="NOT_SUPPORTED"/>
+            <tx:method name="find*" read-only="false" propagation="NOT_SUPPORTED"/>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
 
-	<aop:config>
-		<aop:pointcut id="bussinessService" expression="execution(* com.xl.dao.*.*(..))" />
-		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice" />
-	</aop:config>
+    <aop:config>
+        <aop:pointcut id="bussinessService" expression="execution(* com.xl.dao.*.*(..))"/>
+        <aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice"/>
+    </aop:config>
 
 
-	<import resource="applicationContext-socket.xml" />
+    <import resource="applicationContext-socket.xml"/>
 
-	<!-- task任务扫描注解 -->
-	<task:annotation-driven />
-	<context:component-scan base-package="com.xl.controller"></context:component-scan>
+    <import resource="applicationContext-dao.xml"/>
 
-	<import resource="applicationContext-dao.xml" />
+    <import resource="cache-config.xml"/>
 </beans>

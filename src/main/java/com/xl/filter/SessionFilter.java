@@ -38,6 +38,9 @@ public class SessionFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         String uri = request.getRequestURI();
         request.setCharacterEncoding("utf-8");
+
+        MyRequestUtil.getHost(request);//初始化host，与其他无关
+
         String deviceId = request.getParameter("deviceId");
         if (!MyUtil.isEmpty(deviceId)) {
             UserTable uts = null;
@@ -51,9 +54,9 @@ public class SessionFilter extends OncePerRequestFilter {
                 if (ut != null) {
                     Vip vip = vipDao.getVipByDeviceId(deviceId);//查询vip信息
                     if (vip != null) {
-                        UserBean ub = ut.gUserBean();
+                        UserBean ub = ut.getUserBean();
                         ub.setVip(true);
-                        ut.sUserBean(ub);
+                        ut.setUserBean(ub);
                     }
                     MyRequestUtil.setUserTable(request.getSession(),ut);
                 }
