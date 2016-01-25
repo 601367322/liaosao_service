@@ -60,7 +60,7 @@ public class GroupMessageServlet {
                 ChannelHandlerContext session = HttpHelloWorldServerHandler.groupSessionMap.get(key);
                 if (session != null) {
                     Map<String, Object> responseJson = new HashMap<String, Object>();
-                    responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_GROUP_JOIN);
+//                    responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_GROUP_JOIN);
                     responseJson.put(StaticUtil.CONTENT, ut);
                     session.writeAndFlush(responseJson.toString() + "\n");
                 }

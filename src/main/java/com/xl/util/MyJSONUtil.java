@@ -20,8 +20,13 @@ public class MyJSONUtil {
     }
 
     public static Object getErrorInfoJsonObject(String error) {
+        return getErrorInfoJsonObject(ResultCode.FAIL, error);
+    }
+
+
+    public static Object getErrorInfoJsonObject(int status, String error) {
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put(ResultCode.STATUS, ResultCode.FAIL);
+        result.put(ResultCode.STATUS, status);
         result.put(ResultCode.INFO, error);
         return MyJSONUtil.beanToJson(result);
     }

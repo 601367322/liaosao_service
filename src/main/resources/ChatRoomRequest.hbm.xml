@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!DOCTYPE hibernate-mapping PUBLIC
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+<hibernate-mapping>
+
+    <class name="com.xl.bean.ChatRoomRequest" table="chat_room_request" schema="xl_database">
+        <id name="id" type="java.lang.Integer">
+            <column name="id"/>
+            <generator class="native" />
+        </id>
+        <property name="roomId"  type="java.lang.Integer">
+            <column name="roomId"/>
+        </property>
+        <property name="times" type="java.lang.Integer">
+            <column name="times"/>
+        </property>
+        <property name="state" type="java.lang.Integer">
+            <column name="state"/>
+        </property>
+        <property name="deviceIdForRequester" type="java.lang.String">
+            <column name="deviceIdForRequester" length="50"/>
+        </property>
+        <property name="deviceIdForMaster" type="java.lang.String">
+            <column name="deviceIdForMaster" length="50"/>
+        </property>
+        <property name="createTime" type="java.util.Date">
+            <column name="createTime"/>
+        </property>
+    </class>
+</hibernate-mapping>

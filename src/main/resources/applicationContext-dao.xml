@@ -35,4 +35,8 @@
     <bean id="chatRoomDao" class="com.xl.dao.ChatRoomDao">
         <property name="sessionFactory" ref="sessionFactory"></property>
     </bean>
+
+    <bean id="chatRoomRequestDao" class="com.xl.dao.ChatRoomRequestDao">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
 </beans>

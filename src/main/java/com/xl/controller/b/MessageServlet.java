@@ -444,8 +444,7 @@ public class MessageServlet {
     public
     @ResponseBody
     Object getAllMyMessage(@RequestParam String deviceId) throws Exception {
-        List<UnlineMessage> list = unlineMessageDao
-                .getMyUnlineMessage(deviceId);
+        List<UnlineMessage> list = unlineMessageDao.getMyUnlineMessage(deviceId);
         unlineMessageDao.deleteAll(MyRequestUtil.getUserTable(session).getDeviceId(), list);
         return MyJSONUtil.getSuccessJsonObject(list);
     }

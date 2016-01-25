@@ -46,7 +46,6 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
 
                     //设置头像
                     UserTable ut = (UserTable) list.get(i)[1];
-                    session.evict(ut);//从session里清楚，避免自动更新
                     UserBean userBean = ut.getUserBean();
                     userBean.setLogo(MyRequestUtil.getHost(null) + userBean.getLogo());
                     ut.setUserBean(userBean);
@@ -58,6 +57,10 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
             }
         });
         return list;
+    }
+
+    public ChatRoom findChatRoomById(int id) {
+        return getHibernateTemplate().get(ChatRoom.class, id);
     }
 
     @CacheEvict(value = "ChatRoom", key = "#obj.deviceId")

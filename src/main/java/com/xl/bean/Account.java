@@ -10,7 +10,7 @@ public class Account implements Serializable{
     private String deviceId;
     private String zhifubao;
     private String weixin;
-    private Double coin;
+    private Double coin = 0.0;
 
     public int getId() {
         return id;

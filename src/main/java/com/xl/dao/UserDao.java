@@ -15,9 +15,7 @@ public class UserDao extends BaseDao<UserTable> {
                     .find("From UserTable u where u.deviceId='" + deviceId
                             + "'");
             if (list != null && list.size() > 0) {
-                UserTable ut = list.get(0);
-                currentSession().evict(ut);
-                return ut;
+                return list.get(0);
             }
         }
         return null;

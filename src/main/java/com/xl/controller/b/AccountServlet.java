@@ -12,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Shen on 2015/12/20.
@@ -36,7 +34,6 @@ public class AccountServlet {
     public
     @ResponseBody
     Object setUserAccount(@ModelAttribute Account account) throws Exception {
-        Map<String, Object> jo = new HashMap<String, Object>();
         UserTable user = MyRequestUtil.getUserTable(session);
         Account myAccount = accountDao.getAccountByDeviceId(user.getDeviceId());
         if (myAccount == null) {

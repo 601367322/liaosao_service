@@ -18,7 +18,7 @@
         <property name="hibernateProperties">
             <props>
                 <prop key="hibernate.dialect">${dataSource.dialect}</prop>
-                <!--<prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>-->
+                <prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>
                 <prop key="hibernate.show_sql">true</prop>
                 <prop key="hibernate.format_sql">false</prop>
                 <!--&lt;!&ndash; 配置二级缓存 &ndash;&gt;
@@ -44,6 +44,7 @@
                 <value>Album.hbm.xml</value>
                 <value>Account.hbm.xml</value>
                 <value>ChatRoom.hbm.xml</value>
+                <value>ChatRoomRequest.hbm.xml</value>
             </list>
         </property>
     </bean>
@@ -66,8 +67,9 @@
 
     <tx:advice id="txAdvice" transaction-manager="transactionManager">
         <tx:attributes>
-            <tx:method name="get*" read-only="false" propagation="NOT_SUPPORTED"/>
-            <tx:method name="find*" read-only="false" propagation="NOT_SUPPORTED"/>
+            <tx:method name="get*" read-only="true" propagation="NOT_SUPPORTED"/>
+            <tx:method name="find*" read-only="true" propagation="NOT_SUPPORTED"/>
+            <tx:method name="query*" read-only="true" propagation="NOT_SUPPORTED"/>
             <tx:method name="save*" propagation="REQUIRED"/>
             <tx:method name="update*" propagation="REQUIRED"/>
             <tx:method name="delete*" propagation="REQUIRED"/>

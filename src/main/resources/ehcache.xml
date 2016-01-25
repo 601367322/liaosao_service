@@ -87,6 +87,14 @@
            timeToIdleSeconds="600"
            statistics="true"
            timeToLiveSeconds="600"/>
+    <cache name="ChatRoomRequest"
+           eternal="false"
+           maxEntriesLocalHeap="200"
+           overflowToDisk="false"
+           diskPersistent="false"
+           timeToIdleSeconds="600"
+           statistics="true"
+           timeToLiveSeconds="600"/>
     <!--
         eternal="false"   // 元素是否永恒,如果是就永不过期(必须设置)
         maxElementsInMemory="1000" // 缓存容量的内存最大值(必须设置)
