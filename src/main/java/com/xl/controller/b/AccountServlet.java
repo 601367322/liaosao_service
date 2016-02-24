@@ -44,8 +44,6 @@ public class AccountServlet {
         if (account != null) {
             if (account.getZhifubao() != null)
                 myAccount.setZhifubao(account.getZhifubao());
-            if (account.getWeixin() != null)
-                myAccount.setWeixin(account.getWeixin());
         }
 
         accountDao.saveOrUpdate(myAccount);

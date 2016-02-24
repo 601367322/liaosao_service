@@ -28,4 +28,12 @@ public class BaseDao<T> extends HibernateDaoSupport {
         }
     }
 
+    public void delete(T obj) throws Exception {
+        try {
+            getHibernateTemplate().delete(obj);
+        }catch (Exception e){
+            throw new Exception("参数错误");
+        }
+    }
+
 }

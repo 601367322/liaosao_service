@@ -15,11 +15,11 @@
         <property name="zhifubao" type="java.lang.String">
             <column name="zhifubao" length="50"/>
         </property>
-        <property name="weixin" type="java.lang.String">
-            <column name="weixin" length="50"/>
-        </property>
         <property name="coin" type="java.lang.Double">
             <column name="coin" precision="22"/>
+        </property>
+        <property name="coldCoin" type="java.lang.Double">
+            <column name="coldCoin" precision="22"/>
         </property>
     </class>
 </hibernate-mapping>

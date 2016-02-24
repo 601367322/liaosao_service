@@ -58,6 +58,18 @@ public class ChatRoomServlet {
         return MyJSONUtil.getSuccessJsonObject(chatRoom);
     }
 
+    @RequestMapping(value = "/deleteroom")
+    public
+    @ResponseBody
+    Object deleteChatRoom(@RequestParam Integer roomId) throws Exception {
+        UserTable user = MyRequestUtil.getUserTable(session);
+        ChatRoom room = chatRoomDao.findChatRoomById(roomId);
+        if (!user.getDeviceId().equals(room.getDeviceId())) {
+            throw new Exception("这不是你的哦");
+        }
+        chatRoomDao.delete(user.getDeviceId(), room);
+        return MyJSONUtil.getSuccessJsonObject();
+    }
 
     @RequestMapping(value = "/roomlist")
     public

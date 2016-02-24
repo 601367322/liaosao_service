@@ -80,4 +80,9 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
     public void update(ChatRoom obj) throws Exception {
         super.update(obj);
     }
+
+    @CacheEvict(value = "ChatRoom", key = "#deviceId")
+    public void delete(String deviceId, ChatRoom obj) throws Exception {
+        super.delete(obj);
+    }
 }
