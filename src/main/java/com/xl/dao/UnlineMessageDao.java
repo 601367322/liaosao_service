@@ -1,6 +1,7 @@
 package com.xl.dao;
 
 import com.xl.bean.UnlineMessage;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ public class UnlineMessageDao extends BaseDao {
         return list;
     }
 
-    @Cacheable(value = "UnlineMessage", key = "#deviceId")
+    @CacheEvict(value = "UnlineMessage", key = "#deviceId")
     public void deleteAll(String deviceId, List list) {
         getHibernateTemplate().deleteAll(list);
     }

@@ -273,4 +273,40 @@ public class UserServlet {
             t.delete();
         }
     }
+
+    /**
+     * 自动充值
+     *
+     * @param orderId
+     * @return
+     */
+    @RequestMapping(value = "/paymoney")
+    public
+    @ResponseBody
+    Object payMoney(@RequestParam String orderId) throws Exception {
+        UserTable ut = MyRequestUtil.getUserTable(session);//从session里获取用户信息
+
+        if (!Bmob.isInit()) {
+            Bmob.initBmob("2c9f0c5fbeb32f1b1bce828d29514f5d",
+                    "592b4d559540535e66ad45364913ec1f");
+        }
+
+        String str = Bmob.findPayOrder(orderId);
+
+        Pay order = MyJSONUtil.jsonToBean(str, Pay.class);
+        if (order != null && order.getTrade_state().equals("SUCCESS")) {
+            Pay dbOrder = payDao.getPay(orderId);
+            if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
+                //可以增加会员
+                payDao.save(order);
+                System.out.println(order.getTotal_fee());
+                return MyJSONUtil.getSuccessJsonObject();
+            } else {
+                //不可以
+                return MyJSONUtil.getErrorJsonObject();
+            }
+        } else {
+            throw new MyException(StringUtil.FAIL_PAY);
+        }
+    }
 }

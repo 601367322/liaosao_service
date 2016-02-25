@@ -1,6 +1,7 @@
 package com.xl.dao;
 
 import com.xl.bean.Pay;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
 /**
@@ -13,17 +14,17 @@ public class PayDao extends BaseDao<Pay> {
         return getHibernateTemplate().get(Pay.class, orderId);
     }
 
-    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @CacheEvict(value = "Pay",key = "#obj.out_trade_no")
     @Override
     public Object save(Pay obj) throws Exception {
         return super.save(obj);
     }
-    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @CacheEvict(value = "Pay",key = "#obj.out_trade_no")
     @Override
     public void saveOrUpdate(Pay obj) throws Exception {
         super.saveOrUpdate(obj);
     }
-    @Cacheable(value = "Pay",key = "#obj.out_trade_no")
+    @CacheEvict(value = "Pay",key = "#obj.out_trade_no")
     @Override
     public void update(Pay obj) throws Exception {
         super.update(obj);
