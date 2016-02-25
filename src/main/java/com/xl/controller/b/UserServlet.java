@@ -300,6 +300,7 @@ public class UserServlet {
                 //可以增加会员
                 payDao.save(order);
                 System.out.println(order.getTotal_fee());
+                // TODO
                 return MyJSONUtil.getSuccessJsonObject();
             } else {
                 //不可以
