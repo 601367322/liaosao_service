@@ -32,4 +32,9 @@ public class AccountDao extends BaseDao<Account> {
         return super.save(obj);
     }
 
+    @CacheEvict(value = "Account",key = "#obj.deviceId")
+    @Override
+    public void update(Account obj) throws Exception {
+        super.update(obj);
+    }
 }

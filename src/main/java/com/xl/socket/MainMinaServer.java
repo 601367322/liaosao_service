@@ -16,7 +16,6 @@ public class MainMinaServer {
     public void init() {
         new Thread(new Runnable() {
             public void run() {
-                // TODO Auto-generated method stub
                 EventLoopGroup bossGroup = new NioEventLoopGroup();
                 EventLoopGroup workerGroup = new NioEventLoopGroup();
                 try {

@@ -17,6 +17,7 @@ public class MyUtil {
             "yyyy-MM-dd hh:mm:ss");
 
     public static String getmd5DeviceId(String deviceId) {
+        // TODO
         return deviceId.length() > 16 ? MD5.GetMD5Code(deviceId).substring(8, 24)
                 : deviceId;
     }

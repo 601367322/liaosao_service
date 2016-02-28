@@ -1,24 +1,23 @@
 package net.coobird.thumbnailator.tasks.io;
 
-import java.awt.Rectangle;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
 import net.coobird.thumbnailator.filters.ImageFilter;
 import net.coobird.thumbnailator.geometry.Region;
 import net.coobird.thumbnailator.tasks.UnsupportedFormatException;
 import net.coobird.thumbnailator.util.exif.ExifFilterUtils;
 import net.coobird.thumbnailator.util.exif.ExifUtils;
 import net.coobird.thumbnailator.util.exif.Orientation;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * An {@link ImageSource} which uses an {@link InputStream} to read the
@@ -106,7 +105,6 @@ public class InputStreamImageSource extends AbstractImageSource<InputStream>
 		{
 			// If something goes wrong, then skip the orientation-related
 			// processing.
-			// TODO Ought to have some way to track errors.
 		}
 		
 		BufferedImage img;
@@ -124,8 +122,7 @@ public class InputStreamImageSource extends AbstractImageSource<InputStream>
 		}
 		
 		/*
-		 * FIXME Workaround to enable subsampling for large source images.
-		 * 
+		 *
 		 * Issue:
 		 * https://code.google.com/p/thumbnailator/issues/detail?id=69
 		 */

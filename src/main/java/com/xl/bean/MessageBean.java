@@ -17,7 +17,6 @@ public class MessageBean implements Serializable{
 	private Integer msgType;
 	public MessageBean() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
     public Integer getId() {

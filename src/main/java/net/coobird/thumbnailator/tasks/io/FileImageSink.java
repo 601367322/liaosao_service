@@ -1,5 +1,12 @@
 package net.coobird.thumbnailator.tasks.io;
 
+import net.coobird.thumbnailator.ThumbnailParameter;
+import net.coobird.thumbnailator.tasks.UnsupportedFormatException;
+import net.coobird.thumbnailator.util.BufferedImages;
+import net.coobird.thumbnailator.util.ThumbnailatorUtils;
+
+import javax.imageio.*;
+import javax.imageio.stream.ImageOutputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -7,18 +14,6 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-
-import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
-import javax.imageio.stream.ImageOutputStream;
-
-import net.coobird.thumbnailator.ThumbnailParameter;
-import net.coobird.thumbnailator.tasks.UnsupportedFormatException;
-import net.coobird.thumbnailator.util.BufferedImages;
-import net.coobird.thumbnailator.util.ThumbnailatorUtils;
 
 /**
  * An {@link ImageSink} which writes the resulting thumbnail to a file.
@@ -253,11 +248,6 @@ public class FileImageSink extends AbstractImageSink<File>
 	{
 		super.write(img);
 		
-		/* TODO refactor.
-		 * The following code has been adapted from the
-		 * StreamThumbnailTask.write method.
-		 */
-		
 		/*
 		 * Add or replace the file extension of the output file.
 		 * 
@@ -377,7 +367,6 @@ public class FileImageSink extends AbstractImageSink<File>
 		 * The "cause" parameter has been introduced in Java 6:
 		 * http://docs.oracle.com/javase/6/docs/api/java/io/IOException.html#IOException%28java.lang.String,%20java.lang.Throwable%29
 		 *
-		 * TODO Whether to surround this portion of code in a try-catch
 		 *      again is debatable, as it wouldn't really add more utility.
 		 *
 		 *      Furthermore, there are other calls in this method which will

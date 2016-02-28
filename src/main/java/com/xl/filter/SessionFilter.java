@@ -24,7 +24,6 @@ public class SessionFilter extends OncePerRequestFilter {
 
     @Override
     protected void initFilterBean() throws ServletException {
-        // TODO Auto-generated method stub
         super.initFilterBean();
         WebApplicationContext context = WebApplicationContextUtils
                 .getWebApplicationContext(getServletContext());

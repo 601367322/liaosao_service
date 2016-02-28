@@ -1,10 +1,9 @@
 package net.coobird.thumbnailator.filters;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-
 import net.coobird.thumbnailator.builders.BufferedImageBuilder;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 /**
  * A class containing rotation filters.
@@ -103,7 +102,6 @@ public class Rotation
 				Graphics2D g = newImage.createGraphics();
 				
 				/*
-				 * TODO consider RenderingHints to use.
 				 * The following are hints which have been chosen to give
 				 * decent image quality. In the future, there may be a need
 				 * to have a way to change these settings.

@@ -1,6 +1,17 @@
 package net.coobird.thumbnailator.tasks.io;
 
-import java.awt.Rectangle;
+import net.coobird.thumbnailator.filters.ImageFilter;
+import net.coobird.thumbnailator.geometry.Region;
+import net.coobird.thumbnailator.tasks.UnsupportedFormatException;
+import net.coobird.thumbnailator.util.exif.ExifFilterUtils;
+import net.coobird.thumbnailator.util.exif.ExifUtils;
+import net.coobird.thumbnailator.util.exif.Orientation;
+
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReadParam;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,18 +19,6 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReadParam;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-
-import net.coobird.thumbnailator.filters.ImageFilter;
-import net.coobird.thumbnailator.geometry.Region;
-import net.coobird.thumbnailator.tasks.UnsupportedFormatException;
-import net.coobird.thumbnailator.util.exif.ExifFilterUtils;
-import net.coobird.thumbnailator.util.exif.ExifUtils;
-import net.coobird.thumbnailator.util.exif.Orientation;
 
 /**
  * An {@link ImageSource} which reads the source image from a file.
@@ -86,10 +85,6 @@ public class FileImageSource extends AbstractImageSource<File>
 			);
 		}
 		
-		/* TODO refactor.
-		 * The following code has been adapted from the
-		 * StreamThumbnailTask.read method.
-		 */
 		ImageInputStream iis = ImageIO.createImageInputStream(sourceFile);
 		
 		if (iis == null)
@@ -136,7 +131,6 @@ public class FileImageSource extends AbstractImageSource<File>
 		{
 			// If something goes wrong, then skip the orientation-related
 			// processing.
-			// TODO Ought to have some way to track errors.
 		}
 		
 		BufferedImage img;
@@ -154,8 +148,7 @@ public class FileImageSource extends AbstractImageSource<File>
 		}
 		
 		/*
-		 * FIXME Workaround to enable subsampling for large source images.
-		 * 
+		 *
 		 * Issue:
 		 * https://code.google.com/p/thumbnailator/issues/detail?id=69
 		 */

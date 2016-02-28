@@ -9,8 +9,8 @@ public class Account implements Serializable{
     private int id;
     private String deviceId;
     private String zhifubao;
-    private Double coin = 0.0;
-    private Double coldCoin = 0.0;
+    private double coin = 0.0;
+    private double coldCoin = 0.0;
 
     public int getId() {
         return id;
@@ -36,20 +36,19 @@ public class Account implements Serializable{
         this.zhifubao = zhifubao;
     }
 
-
-    public Double getCoin() {
+    public double getCoin() {
         return coin;
     }
 
-    public void setCoin(Double coin) {
+    public void setCoin(double coin) {
         this.coin = coin;
     }
 
-    public Double getColdCoin() {
+    public double getColdCoin() {
         return coldCoin;
     }
 
-    public void setColdCoin(Double coldCoin) {
+    public void setColdCoin(double coldCoin) {
         this.coldCoin = coldCoin;
     }
 }

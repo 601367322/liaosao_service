@@ -38,7 +38,6 @@ public class HttpHelloWorldServerHandler extends
 
     @Override
     public void channelInactive(ChannelHandlerContext session) throws Exception {
-        // TODO Auto-generated method stub
         super.channelInactive(session);
         System.out.println("channelInactive\t" + session.attr(
                 AttributeKey.valueOf(StaticUtil.DEVICEID)).get());

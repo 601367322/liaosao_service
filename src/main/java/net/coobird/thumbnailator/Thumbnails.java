@@ -2232,7 +2232,6 @@ watermark(Positions.CENTER, image, opacity);
 		{
 			checkReadiness();
 			/*
-			 * TODO To get the precise error information, there would have to
 			 * be an event notification mechanism.
 			 */
 			return new BufferedImageIterable();

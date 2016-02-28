@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Shen on 2015/9/19.
@@ -44,6 +45,8 @@ public class UserServlet {
     VipCoinDao coinDao;
     @Resource
     AlbumDao albumDao;
+    @Resource
+    AccountDao accountDao;
 
     /**
      * 上传头像
@@ -99,7 +102,6 @@ public class UserServlet {
                 //返回地址http://host/img/deviceId/logo_.jpg
                 return MyJSONUtil.getSuccessJsonObject("logo", MyRequestUtil.getHost(request) + ub.getLogo());
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 throw new Exception("上传失败，请重试");
             }
@@ -146,7 +148,6 @@ public class UserServlet {
                 //返回地址http://host/img/deviceId/logo_.jpg
                 return MyJSONUtil.getSuccessJsonObject(album);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
                 throw new Exception("上传失败，请重试");
             }
@@ -254,12 +255,12 @@ public class UserServlet {
         try {
             List<Integer> list = MyJSONUtil.jsonToList(ids, Integer.class);
             for (int i = 0; i < list.size(); i++) {
-                Album album = albumDao.queryById(MyRequestUtil.getUserTable(session).getDeviceId(),list.get(i));
+                Album album = albumDao.queryById(MyRequestUtil.getUserTable(session).getDeviceId(), list.get(i));
                 File file = new File("/mnt/" + album.getPath());
                 deleteThumb(file, MyUtil._320x320);
                 deleteThumb(file, MyUtil._640x640);
                 deleteThumb(file, "");
-                albumDao.deleteAlbumById(MyRequestUtil.getUserTable(session).getDeviceId(),list.get(i));
+                albumDao.deleteAlbumById(MyRequestUtil.getUserTable(session).getDeviceId(), list.get(i));
             }
         } catch (Exception e) {
             throw new Exception("删除失败");
@@ -297,11 +298,25 @@ public class UserServlet {
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
             if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
-                //可以增加会员
+                //符合条件，将订单存入数据库
                 payDao.save(order);
+                order.setTotal_fee(2.1);
                 System.out.println(order.getTotal_fee());
-                // TODO
-                return MyJSONUtil.getSuccessJsonObject();
+                // TODO x+0.05x = 2.1
+                // 1.05x = y
+                // x = y/1.05
+                //要充值的烧币数量
+                int sb = (int) (order.getTotal_fee() / 1.05f);
+                Account account = null;
+                try {
+                    account = accountDao.getAccountByDeviceId(ut.getDeviceId());
+                    account.setCoin(account.getCoin() + Double.valueOf(sb));
+                    accountDao.update(account);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                return MyJSONUtil.getSuccessJsonObject(account);
             } else {
                 //不可以
                 return MyJSONUtil.getErrorJsonObject();
@@ -309,5 +324,55 @@ public class UserServlet {
         } else {
             throw new MyException(StringUtil.FAIL_PAY);
         }
+    }
+
+    /**
+     * 获取交易记录
+     */
+    @RequestMapping(value = "/paydetaillist")
+    public
+    @ResponseBody
+    Object payDetailList() throws Exception {
+        List<Pay> list = payDao.getPayListByDeviceId(MyRequestUtil.getUserTable(session).getDeviceId());
+        return MyJSONUtil.getSuccessJsonObject(list);
+    }
+
+    /**
+     * 提现
+     */
+    @RequestMapping(value = "/paytixian")
+    public
+    @ResponseBody
+    Object payTiXian(String zhifubao, Double money) throws Exception {
+        UserTable ut = MyRequestUtil.getUserTable(session);
+        Account account = accountDao.getAccountByDeviceId(ut.getDeviceId());
+        account.setZhifubao(zhifubao);
+
+        if (!MyUtil.isEmpty(zhifubao) && money != null) {
+            if (money < 100) {
+                throw new Exception("不能少于100");
+            }
+
+            if (money > account.getCoin()) {
+                throw new Exception("呵呵，你有那么多钱么？");
+            }
+
+            account.setCoin(account.getCoin() - money);
+            account.setColdCoin(account.getColdCoin() + money);
+            accountDao.update(account);
+
+            Pay pay = new Pay();
+            pay.setOut_trade_no(UUID.randomUUID().toString());
+            pay.setName("提现");
+            pay.setBody(MyUtil.getmd5DeviceId(ut.getDeviceId()));
+            pay.setTotal_fee(Double.valueOf(money));
+            pay.setCreate_time(MyUtil.dateFormat.format(new Date()));
+            pay.setPay_type("TIXIAN");
+            pay.setTrade_state("LOADING");
+            pay.setTransaction_id(zhifubao);
+            payDao.save(pay);
+            return MyJSONUtil.getSuccessJsonObject(account);
+        }
+        return MyJSONUtil.getErrorJsonObject();
     }
 }

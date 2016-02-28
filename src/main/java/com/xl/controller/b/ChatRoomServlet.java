@@ -91,7 +91,7 @@ public class ChatRoomServlet {
         }
         Account account = accountDao.getAccountByDeviceId(userTable.getDeviceId());//获取账户
         int totalPrice = (int) (times * room.getPrice());
-        if (account == null || account.getCoin() == null || account.getCoin() < totalPrice) {
+        if (account == null || account.getCoin() < totalPrice) {
             return MyJSONUtil.getErrorInfoJsonObject(ResultCode.NOMONEY, "钱不够，赶紧充值！");
         }
 
