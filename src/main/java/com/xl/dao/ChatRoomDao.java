@@ -3,6 +3,7 @@ package com.xl.dao;
 import com.xl.bean.ChatRoom;
 import com.xl.bean.UserBean;
 import com.xl.bean.UserTable;
+import com.xl.exception.MyException;
 import com.xl.util.MyRequestUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
@@ -21,10 +22,11 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
 
     @Cacheable(value = "ChatRoom", key = "#deviceId")
     public ChatRoom findByDeviceId(String deviceId) {
-        String sql = "From ChatRoom where deviceId = '" + deviceId + "'";
-        List list = getHibernateTemplate().find(sql);
-        if (list != null && list.size() > 0) {
-            return (ChatRoom) list.get(0);
+        String sql = "From ChatRoom where deviceId = ? and state = 0";
+        try {
+            return (ChatRoom) getHibernateTemplate().find(sql, deviceId).get(0);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -32,7 +34,7 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
     public List<ChatRoom> findChatRoomByPage(int page) {
         final int number = 20;
         final int startId = page * number;
-        final String sql = "select chatRoom,userTable From ChatRoom as chatRoom , UserTable as userTable where chatRoom.deviceId = userTable.deviceId order by chatRoom.id desc";
+        final String sql = "select chatRoom,userTable From ChatRoom as chatRoom , UserTable as userTable where chatRoom.deviceId = userTable.deviceId and chatRoom.state = 0 order by chatRoom.id desc";
         List<ChatRoom> list = getHibernateTemplate().execute(new HibernateCallback<List<ChatRoom>>() {
             @Override
             public List<ChatRoom> doInHibernate(Session session) throws HibernateException {
@@ -59,8 +61,13 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
         return list;
     }
 
-    public ChatRoom findChatRoomById(int id) {
-        return getHibernateTemplate().get(ChatRoom.class, id);
+    public ChatRoom findChatRoomById(int id) throws MyException {
+        String hql = "From ChatRoom where id = ? and state = 0";
+        try {
+            return (ChatRoom) getHibernateTemplate().find(hql, id).get(0);
+        } catch (Exception e) {
+            throw new MyException("已关闭");
+        }
     }
 
     @CacheEvict(value = "ChatRoom", key = "#obj.deviceId")
@@ -82,7 +89,8 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
     }
 
     @CacheEvict(value = "ChatRoom", key = "#deviceId")
-    public void delete(String deviceId, ChatRoom obj) throws Exception {
-        super.delete(obj);
+    public void deleteByDeviceId(String deviceId) {
+        String hql = "Update ChatRoom set state = 2 where deviceId = ?";
+        getHibernateTemplate().bulkUpdate(hql, deviceId);
     }
 }

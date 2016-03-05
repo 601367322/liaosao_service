@@ -1,7 +1,6 @@
 package com.xl.dao;
 
 import com.xl.bean.Pay;
-import com.xl.util.MyUtil;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 
@@ -36,6 +35,6 @@ public class PayDao extends BaseDao<Pay> {
     }
 
     public List<Pay> getPayListByDeviceId(String deviceId) {
-        return (List<Pay>) getHibernateTemplate().find("From Pay where body = ? order by create_time desc", MyUtil.getmd5DeviceId(deviceId));
+        return (List<Pay>) getHibernateTemplate().find("From Pay where body = ? order by create_time desc", deviceId);
     }
 }

@@ -15,6 +15,16 @@ public class ChatRoom implements Serializable{
     private Integer maxTime;
     private Date createTime;
 
+    public int getState() {
+        return state;
+    }
+
+    public void setState(int state) {
+        this.state = state;
+    }
+
+    private int state;
+
     private UserTable user;
 
     public UserTable getUser() {

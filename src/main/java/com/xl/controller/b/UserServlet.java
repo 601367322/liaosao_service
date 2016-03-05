@@ -189,9 +189,18 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        String str = Bmob.findPayOrder(orderId);
+        Pay order = null;
+        int ret = 0;
 
-        Pay order = MyJSONUtil.jsonToBean(str, Pay.class);
+        while (ret < 5) {
+            ret++;
+            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
+            if (order != null && order.getTrade_state().equals("SUCCESS")) {
+                break;
+            } else {
+                Thread.sleep(1000l);
+            }
+        }
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
@@ -217,8 +226,7 @@ public class UserServlet {
             }
             if (vip == null) {
                 vip = new Vip();
-                vip.setDeviceId(deviceId.length() > 16 ? MyUtil.getmd5DeviceId(deviceId)
-                        : deviceId);
+                vip.setDeviceId(deviceId);
                 vip.setCreateTime(new Date().getTime());
                 vip.setEndTime(vip.getCreateTime() + month * 30l * 24l * 60l
                         * 60l * 1000l);
@@ -292,15 +300,25 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        String str = Bmob.findPayOrder(orderId);
+        Pay order = null;
+        int ret = 0;
 
-        Pay order = MyJSONUtil.jsonToBean(str, Pay.class);
+        while (ret < 5) {
+            ret++;
+            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
+            if (order != null && order.getTrade_state().equals("SUCCESS")) {
+                break;
+            } else {
+                Thread.sleep(1000l);
+            }
+        }
+
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
             if (dbOrder == null || !dbOrder.getTrade_state().equals("SUCCESS")) {
                 //符合条件，将订单存入数据库
                 payDao.save(order);
-                order.setTotal_fee(2.1);
+//                order.setTotal_fee(2.1);
                 System.out.println(order.getTotal_fee());
                 // TODO x+0.05x = 2.1
                 // 1.05x = y
@@ -364,7 +382,7 @@ public class UserServlet {
             Pay pay = new Pay();
             pay.setOut_trade_no(UUID.randomUUID().toString());
             pay.setName("提现");
-            pay.setBody(MyUtil.getmd5DeviceId(ut.getDeviceId()));
+            pay.setBody(ut.getDeviceId());
             pay.setTotal_fee(Double.valueOf(money));
             pay.setCreate_time(MyUtil.dateFormat.format(new Date()));
             pay.setPay_type("TIXIAN");

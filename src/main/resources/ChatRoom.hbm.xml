@@ -27,5 +27,8 @@
         <property name="createTime" type="java.util.Date">
             <column name="createTime" not-null="true"/>
         </property>
+        <property name="state" type="java.lang.Integer">
+            <column name="state" not-null="true"/>
+        </property>
     </class>
 </hibernate-mapping>

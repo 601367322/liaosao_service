@@ -67,7 +67,7 @@ public class ChatRoomServlet {
         if (!user.getDeviceId().equals(room.getDeviceId())) {
             throw new Exception("这不是你的哦");
         }
-        chatRoomDao.delete(user.getDeviceId(), room);
+        chatRoomDao.deleteByDeviceId(user.getDeviceId());
         return MyJSONUtil.getSuccessJsonObject();
     }
 
@@ -82,8 +82,6 @@ public class ChatRoomServlet {
     public
     @ResponseBody
     Object sendChatRequest(@RequestParam Integer times, @RequestParam Integer roomId) throws Exception {
-
-
         UserTable userTable = MyRequestUtil.getUserTable(session);//获取当前用户
         ChatRoom room = chatRoomDao.findChatRoomById(roomId);//获取房间
         if (room.getMaxTime() < times) {//超出时间

@@ -8,11 +8,17 @@ import io.netty.handler.codec.Delimiters;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.nio.charset.Charset;
 
+@Component
 public class HttpHelloWorldServerInitializer extends ChannelInitializer<SocketChannel> {  
-      
+
+    @Autowired
+    HttpHelloWorldServerHandler handler;
+
     @Override  
     public void initChannel(SocketChannel ch) throws Exception {  
         ChannelPipeline pipeline = ch.pipeline();  
@@ -23,6 +29,6 @@ public class HttpHelloWorldServerInitializer extends ChannelInitializer<SocketCh
         pipeline.addLast("decoder", new StringDecoder(Charset.forName("utf-8")));  
         pipeline.addLast("encoder", new StringEncoder(Charset.forName("utf-8")));  
         pipeline.addLast("heartbeat", new MyHandler());
-        pipeline.addLast("handler",new HttpHelloWorldServerHandler());
-    }  
-}  
+        pipeline.addLast("handler",handler);
+    }
+}

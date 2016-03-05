@@ -479,7 +479,7 @@ public class MessageServlet {
             }
             if (vip == null) {
                 vip = new Vip();
-                vip.setDeviceId(MyUtil.getmd5DeviceId(deviceId));
+                vip.setDeviceId(deviceId);
                 vip.setCreateTime(new Date().getTime());
                 vip.setEndTime(vip.getCreateTime() + month * 30l * 24l * 60l
                         * 60l * 1000l);

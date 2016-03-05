@@ -81,10 +81,7 @@
         <aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice"/>
     </aop:config>
 
-
-    <import resource="applicationContext-socket.xml"/>
-
     <import resource="applicationContext-dao.xml"/>
-
+    <import resource="applicationContext-socket.xml"/>
     <import resource="cache-config.xml"/>
 </beans>

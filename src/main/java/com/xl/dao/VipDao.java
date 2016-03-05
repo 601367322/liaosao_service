@@ -13,37 +13,38 @@ public class VipDao extends BaseDao<Vip> {
 
     @Cacheable(value = "Vip", key = "#deviceId")
     public Vip getVipByDeviceId(String deviceId) {
-        deviceId = MyUtil.getmd5DeviceId(deviceId);
         List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
-                "From Vip v where v.deviceId = '" + deviceId
-                        + "' and v.endTime > " + new Date().getTime());
+                "From Vip v where (v.deviceId = ? or v.deviceId = ?) and v.endTime > ?", deviceId, MyUtil.getmd5DeviceId(deviceId), new Date().getTime());
         if (list.size() > 0) {
             return list.get(0);
         } else {
             return null;
         }
     }
+
     @Cacheable(value = "Vip", key = "#deviceId")
     public Vip getVipByDeviceIdAll(String deviceId) {
-        deviceId = MyUtil.getmd5DeviceId(deviceId);
         List<Vip> list = (ArrayList<Vip>) getHibernateTemplate().find(
-                "From Vip v where v.deviceId = '" + deviceId + "'");
+                "From Vip v where (v.deviceId = ? or v.deviceId = ?)", deviceId, MyUtil.getmd5DeviceId(deviceId));
         if (list.size() > 0) {
             return list.get(0);
         } else {
             return null;
         }
     }
+
     @CacheEvict(value = "Vip", key = "#obj.deviceId")
     @Override
     public Object save(Vip obj) throws Exception {
         return super.save(obj);
     }
+
     @CacheEvict(value = "Vip", key = "#obj.deviceId")
     @Override
     public void saveOrUpdate(Vip obj) throws Exception {
         super.saveOrUpdate(obj);
     }
+
     @CacheEvict(value = "Vip", key = "#obj.deviceId")
     @Override
     public void update(Vip obj) throws Exception {
