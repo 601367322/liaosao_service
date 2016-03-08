@@ -20,6 +20,8 @@ import java.util.List;
  */
 public class ChatRoomDao extends BaseDao<ChatRoom> {
 
+    private ChatRoomRequestDao chatRoomRequestDao;
+
     @Cacheable(value = "ChatRoom", key = "#deviceId")
     public ChatRoom findByDeviceId(String deviceId) {
         String sql = "From ChatRoom where deviceId = ? and state = 0";
@@ -90,7 +92,13 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
 
     @CacheEvict(value = "ChatRoom", key = "#deviceId")
     public void deleteByDeviceId(String deviceId) {
+        ChatRoom room = findByDeviceId(deviceId);
         String hql = "Update ChatRoom set state = 2 where deviceId = ?";
         getHibernateTemplate().bulkUpdate(hql, deviceId);
+        chatRoomRequestDao.deleteChatRoomRequestByRoomId(deviceId, room.getId());
+    }
+
+    public void setChatRoomRequestDao(ChatRoomRequestDao chatRoomRequestDao) {
+        this.chatRoomRequestDao = chatRoomRequestDao;
     }
 }

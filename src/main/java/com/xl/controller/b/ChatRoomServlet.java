@@ -117,4 +117,27 @@ public class ChatRoomServlet {
         //返回
         return MyJSONUtil.getSuccessJsonObject(request);
     }
+
+    @RequestMapping(value = "/getchatrequestlist")
+    public
+    @ResponseBody
+    Object getChatRequestList(@RequestParam int page) throws Exception {
+        UserTable user = MyRequestUtil.getUserTable(session);
+        return MyJSONUtil.getSuccessJsonObject(chatRoomRequestDao.findRequestListByDeviceId(user.getDeviceId(), page));
+    }
+
+    @RequestMapping(value = "/chatrequestagree")
+    public
+    @ResponseBody
+    Object chatRequestAgree(@RequestParam int requestId) throws Exception {
+
+        return null;
+    }
+
+    @RequestMapping(value = "/chatrequestdisagree")
+    public
+    @ResponseBody
+    Object chatRequestDisAgree(@RequestParam int requestId) throws Exception {
+        return null;
+    }
 }

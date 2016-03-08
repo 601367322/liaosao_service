@@ -1,17 +1,37 @@
 package com.xl.bean;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by Shen on 2016/1/23.
  */
-public class ChatRoomRequest {
+public class ChatRoomRequest implements Serializable{
     private int id;
     private int roomId;
     private int times;
     private String deviceIdForRequester;
     private String deviceIdForMaster;
     private Date createTime;
+    private int state;
+    private ChatRoom chatRoom;
+    private UserTable user;
+
+    public ChatRoom getChatRoom() {
+        return chatRoom;
+    }
+
+    public void setChatRoom(ChatRoom chatRoom) {
+        this.chatRoom = chatRoom;
+    }
+
+    public UserTable getUser() {
+        return user;
+    }
+
+    public void setUser(UserTable user) {
+        this.user = user;
+    }
 
     public int getState() {
         return state;
@@ -20,8 +40,6 @@ public class ChatRoomRequest {
     public void setState(int state) {
         this.state = state;
     }
-
-    private int state;
 
     public int getId() {
         return id;
