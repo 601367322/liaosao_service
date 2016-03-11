@@ -189,18 +189,8 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        Pay order = null;
-        int ret = 0;
-
-        while (ret < 5) {
-            ret++;
-            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
-            if (order != null && order.getTrade_state().equals("SUCCESS")) {
-                break;
-            } else {
-                Thread.sleep(1000l);
-            }
-        }
+        String order_str = Bmob.findPayOrder(orderId);
+        Pay order = MyJSONUtil.jsonToBean(order_str, Pay.class);
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
@@ -300,18 +290,8 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        Pay order = null;
-        int ret = 0;
-
-        while (ret < 5) {
-            ret++;
-            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
-            if (order != null && order.getTrade_state().equals("SUCCESS")) {
-                break;
-            } else {
-                Thread.sleep(1000l);
-            }
-        }
+        String order_str = Bmob.findPayOrder(orderId);
+        Pay order = MyJSONUtil.jsonToBean(order_str, Pay.class);
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);

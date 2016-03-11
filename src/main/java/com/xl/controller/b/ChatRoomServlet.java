@@ -13,6 +13,7 @@ import com.xl.util.MyJSONUtil;
 import com.xl.util.MyRequestUtil;
 import com.xl.util.ResultCode;
 import io.netty.channel.ChannelHandlerContext;
+import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -22,8 +23,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by Shen on 2016/1/3.
@@ -104,13 +103,18 @@ public class ChatRoomServlet {
 
         chatRoomRequestDao.save(request);
 
+        //冻结资金
+        account.setColdCoin(account.getColdCoin() + times * room.getPrice());
+        account.setCoin(account.getCoin() - times * room.getPrice());
+
+        accountDao.update(account);
 
         //像房主发送聊天请求 socket
         ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap.get(room.getDeviceId());
 
-        Map<String, Object> responseJson = new HashMap<String, Object>();
+        JSONObject responseJson = new JSONObject();
         responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_CHATROOM_REQUEST);
-        responseJson.put(StaticUtil.CONTENT, request);
+        responseJson.put(StaticUtil.CONTENT, MyJSONUtil.getGson().toJson(request));
 
         session.writeAndFlush(responseJson.toString() + "\n");
 
