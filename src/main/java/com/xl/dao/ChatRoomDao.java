@@ -28,7 +28,6 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
         try {
             return (ChatRoom) getHibernateTemplate().find(sql, deviceId).get(0);
         } catch (Exception e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -74,7 +73,7 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
 
     @CacheEvict(value = "ChatRoom", key = "#obj.deviceId")
     @Override
-    public Object save(ChatRoom obj) throws Exception {
+    public ChatRoom save(ChatRoom obj) throws Exception {
         return super.save(obj);
     }
 
@@ -91,11 +90,11 @@ public class ChatRoomDao extends BaseDao<ChatRoom> {
     }
 
     @CacheEvict(value = "ChatRoom", key = "#deviceId")
-    public void deleteByDeviceId(String deviceId) {
+    public void deleteByDeviceId(String deviceId) throws Exception{
         ChatRoom room = findByDeviceId(deviceId);
         String hql = "Update ChatRoom set state = 2 where deviceId = ?";
         getHibernateTemplate().bulkUpdate(hql, deviceId);
-        chatRoomRequestDao.deleteChatRoomRequestByRoomId(deviceId, room.getId());
+        chatRoomRequestDao.deleteChatRoomRequestByRoom(deviceId, room);
     }
 
     public void setChatRoomRequestDao(ChatRoomRequestDao chatRoomRequestDao) {

@@ -1,15 +1,13 @@
 package com.xl.dao;
 
-import com.xl.bean.ChatRoom;
-import com.xl.bean.ChatRoomRequest;
-import com.xl.bean.UserBean;
-import com.xl.bean.UserTable;
+import com.xl.bean.*;
 import com.xl.util.MyRequestUtil;
 import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate4.HibernateCallback;
 
 import java.util.ArrayList;
@@ -20,9 +18,11 @@ import java.util.List;
  */
 public class ChatRoomRequestDao extends BaseDao<ChatRoomRequest> {
 
+    AccountDao accountDao;
+    ChatRoomDao chatRoomDao;
 
     @Cacheable(value = "ChatRoomRequest", key = "#deviceId")
-    public List<ChatRoomRequest> findRequestListByDeviceId(String deviceId,int page) {
+    public List<ChatRoomRequest> findRequestListByDeviceId(String deviceId, int page) {
 
         final int number = 20;
         final int startId = page * number;
@@ -56,11 +56,37 @@ public class ChatRoomRequestDao extends BaseDao<ChatRoomRequest> {
     }
 
     @CacheEvict(value = "ChatRoomRequest", key = "#deviceId")
-    public void deleteChatRoomRequestByRoomId(String deviceId, int roomId) {
-        String hql = "update ChatRoomRequest set state = 3 where roomId = ?";
-        getHibernateTemplate().bulkUpdate(hql, roomId);
+    public void deleteChatRoomRequestByRoom(String deviceId, ChatRoom room) throws Exception {
+        String hql = "From ChatRoomRequest where state = 0 and roomId = ?";
+        List<ChatRoomRequest> list = (List<ChatRoomRequest>) getHibernateTemplate().find(hql, room.getId());
+        for (int i = 0; i < list.size(); i++) {
+            ChatRoomRequest temp = list.get(i);
+            //返还金钱
+            double coin = temp.getTimes() * room.getPrice();
+            Account account = accountDao.getAccountByDeviceId(temp.getDeviceIdForRequester());
+            account.setColdCoin(account.getColdCoin() - coin);
+            account.setCoin(account.getCoin() + coin);
+            accountDao.update(account);
+
+            temp.setState(3);
+            getHibernateTemplate().update(temp);
+        }
     }
 
-    
+    public ChatRoomRequest findChatRoomRequestByRoom(String deviceId, ChatRoom room) {
+        String hql = "From ChatRoomRequest where state = 0 and roomId = ? and deviceIdForRequester = ?";
+        try {
+            return (ChatRoomRequest) getHibernateTemplate().find(hql, room.getId(), deviceId).get(0);
+        } catch (Exception e) {
+        }
+        return null;
+    }
 
+    public void setAccountDao(AccountDao accountDao) {
+        this.accountDao = accountDao;
+    }
+
+    public void setChatRoomDao(ChatRoomDao chatRoomDao) {
+        this.chatRoomDao = chatRoomDao;
+    }
 }

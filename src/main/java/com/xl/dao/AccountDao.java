@@ -28,7 +28,7 @@ public class AccountDao extends BaseDao<Account> {
 
     @CacheEvict(value = "Account",key = "#obj.deviceId")
     @Override
-    public Object save(Account obj) throws Exception {
+    public Account save(Account obj) throws Exception {
         return super.save(obj);
     }
 

@@ -16,7 +16,7 @@ public class VipCoinDao extends BaseDao<VipCoin> {
 
     @CacheEvict(value = "VipCoin", key = "#obj.id")
     @Override
-    public Object save(VipCoin obj) throws Exception {
+    public VipCoin save(VipCoin obj) throws Exception {
         return super.save(obj);
     }
 

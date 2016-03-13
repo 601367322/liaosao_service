@@ -192,13 +192,11 @@ public class UserServlet {
         Pay order = null;
         int ret = 0;
 
-        while (ret < 5) {
+        while (ret < 3) {
             ret++;
             order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
             if (order != null && order.getTrade_state().equals("SUCCESS")) {
                 break;
-            } else {
-                Thread.sleep(1000l);
             }
         }
 
@@ -303,13 +301,11 @@ public class UserServlet {
         Pay order = null;
         int ret = 0;
 
-        while (ret < 5) {
+        while (ret < 3) {
             ret++;
             order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
             if (order != null && order.getTrade_state().equals("SUCCESS")) {
                 break;
-            } else {
-                Thread.sleep(1000l);
             }
         }
 
@@ -320,7 +316,7 @@ public class UserServlet {
                 payDao.save(order);
 //                order.setTotal_fee(2.1);
                 System.out.println(order.getTotal_fee());
-                // TODO x+0.05x = 2.1
+                //  x+0.05x = 2.1
                 // 1.05x = y
                 // x = y/1.05
                 //要充值的烧币数量

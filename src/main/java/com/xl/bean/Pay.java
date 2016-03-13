@@ -80,4 +80,18 @@ public class Pay {
     public void setTrade_state(String trade_state) {
         this.trade_state = trade_state;
     }
+
+    public enum PayType{
+        ALIPAY("ALIPAY"),WECHATPAY("WECHATPAY"),TIXIAN("TIXIAN"),CHATREQUEST("CHATREQUEST");
+
+        public String result;
+
+        PayType(String result) {
+            this.result = result;
+        }
+
+        public String getResult(){
+            return result;
+        }
+    }
 }

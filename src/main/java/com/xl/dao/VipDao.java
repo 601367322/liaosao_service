@@ -35,7 +35,7 @@ public class VipDao extends BaseDao<Vip> {
 
     @CacheEvict(value = "Vip", key = "#obj.deviceId")
     @Override
-    public Object save(Vip obj) throws Exception {
+    public Vip save(Vip obj) throws Exception {
         return super.save(obj);
     }
 
