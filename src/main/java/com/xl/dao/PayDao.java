@@ -18,7 +18,7 @@ public class PayDao extends BaseDao<Pay> {
 
     @CacheEvict(value = "Pay", key = "#obj.out_trade_no")
     @Override
-    public Object save(Pay obj) throws Exception {
+    public Pay save(Pay obj) throws Exception {
         return super.save(obj);
     }
 

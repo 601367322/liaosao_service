@@ -189,8 +189,16 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        String order_str = Bmob.findPayOrder(orderId);
-        Pay order = MyJSONUtil.jsonToBean(order_str, Pay.class);
+        Pay order = null;
+        int ret = 0;
+
+        while (ret < 3) {
+            ret++;
+            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
+            if (order != null && order.getTrade_state().equals("SUCCESS")) {
+                break;
+            }
+        }
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
@@ -290,8 +298,16 @@ public class UserServlet {
                     "592b4d559540535e66ad45364913ec1f");
         }
 
-        String order_str = Bmob.findPayOrder(orderId);
-        Pay order = MyJSONUtil.jsonToBean(order_str, Pay.class);
+        Pay order = null;
+        int ret = 0;
+
+        while (ret < 3) {
+            ret++;
+            order = MyJSONUtil.jsonToBean(Bmob.findPayOrder(orderId), Pay.class);
+            if (order != null && order.getTrade_state().equals("SUCCESS")) {
+                break;
+            }
+        }
 
         if (order != null && order.getTrade_state().equals("SUCCESS")) {
             Pay dbOrder = payDao.getPay(orderId);
@@ -300,7 +316,7 @@ public class UserServlet {
                 payDao.save(order);
 //                order.setTotal_fee(2.1);
                 System.out.println(order.getTotal_fee());
-                // TODO x+0.05x = 2.1
+                //  x+0.05x = 2.1
                 // 1.05x = y
                 // x = y/1.05
                 //要充值的烧币数量

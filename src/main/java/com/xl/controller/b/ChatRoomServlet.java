@@ -1,16 +1,15 @@
 package com.xl.controller.b;
 
-import com.xl.bean.Account;
-import com.xl.bean.ChatRoom;
-import com.xl.bean.ChatRoomRequest;
-import com.xl.bean.UserTable;
+import com.xl.bean.*;
 import com.xl.dao.AccountDao;
 import com.xl.dao.ChatRoomDao;
 import com.xl.dao.ChatRoomRequestDao;
+import com.xl.dao.PayDao;
 import com.xl.socket.HttpHelloWorldServerHandler;
 import com.xl.socket.StaticUtil;
 import com.xl.util.MyJSONUtil;
 import com.xl.util.MyRequestUtil;
+import com.xl.util.MyUtil;
 import com.xl.util.ResultCode;
 import io.netty.channel.ChannelHandlerContext;
 import net.sf.json.JSONObject;
@@ -23,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * Created by Shen on 2016/1/3.
@@ -42,6 +42,9 @@ public class ChatRoomServlet {
 
     @Autowired
     ChatRoomRequestDao chatRoomRequestDao;
+
+    @Autowired
+    PayDao payDao;
 
     @RequestMapping(value = "/createroom")
     public
@@ -83,9 +86,16 @@ public class ChatRoomServlet {
     Object sendChatRequest(@RequestParam Integer times, @RequestParam Integer roomId) throws Exception {
         UserTable userTable = MyRequestUtil.getUserTable(session);//获取当前用户
         ChatRoom room = chatRoomDao.findChatRoomById(roomId);//获取房间
+
+        ChatRoomRequest requestTemp = chatRoomRequestDao.findChatRoomRequestByRoom(userTable.getDeviceId(), room);
+        if (requestTemp != null) {
+            return MyJSONUtil.getErrorInfoJsonObject("已经申请过了哟，正在等待对方同意。");
+        }
+
         if (room.getMaxTime() < times) {//超出时间
             return MyJSONUtil.getErrorInfoJsonObject("你他喵在逗我？！");
         }
+
         Account account = accountDao.getAccountByDeviceId(userTable.getDeviceId());//获取账户
         int totalPrice = (int) (times * room.getPrice());
         if (account == null || account.getCoin() < totalPrice) {
@@ -101,15 +111,27 @@ public class ChatRoomServlet {
         request.setState(0);
         request.setTimes(times);
 
-        chatRoomRequestDao.save(request);
+        request = (ChatRoomRequest) chatRoomRequestDao.save(request);
 
-        //冻结资金
-        account.setColdCoin(account.getColdCoin() + times * room.getPrice());
-        account.setCoin(account.getCoin() - times * room.getPrice());
-
+        //冻结金额
+        double coin = times * room.getPrice();
+        account.setColdCoin(account.getColdCoin() + coin);
+        account.setCoin(account.getCoin() - coin);
         accountDao.update(account);
 
-        //像房主发送聊天请求 socket
+        //生成订单
+        Pay pay = new Pay();
+        pay.setOut_trade_no(UUID.randomUUID().toString());
+        pay.setName("付费聊天");
+        pay.setBody(userTable.getDeviceId());
+        pay.setCreate_time(MyUtil.dateFormat.format(new Date()));
+        pay.setPay_type(Pay.PayType.CHATREQUEST.getResult());
+        pay.setTotal_fee(coin);
+        pay.setTransaction_id(String.valueOf(request.getId()));
+        pay.setTrade_state("WAITING");
+        payDao.save(pay);
+
+        //向房主发送聊天请求 socket
         ChannelHandlerContext session = HttpHelloWorldServerHandler.sessionMap.get(room.getDeviceId());
 
         JSONObject responseJson = new JSONObject();

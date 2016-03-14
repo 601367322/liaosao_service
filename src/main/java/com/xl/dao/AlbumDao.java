@@ -28,7 +28,7 @@ public class AlbumDao extends BaseDao<Album> {
 
     @CacheEvict(value = "Album", key = "#obj.deviceId")
     @Override
-    public Object save(Album obj) throws Exception {
+    public Album save(Album obj) throws Exception {
         return super.save(obj);
     }
 

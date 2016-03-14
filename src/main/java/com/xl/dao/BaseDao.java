@@ -4,9 +4,9 @@ import org.springframework.orm.hibernate4.support.HibernateDaoSupport;
 
 public class BaseDao<T> extends HibernateDaoSupport {
 
-    public Object save(T obj) throws Exception {
+    public T save(T obj) throws Exception {
         try {
-            return getHibernateTemplate().save(obj);
+            return (T) getHibernateTemplate().save(obj);
         } catch (Exception e) {
             throw new Exception("参数错误");
         }
