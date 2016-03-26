@@ -19,7 +19,7 @@
             <props>
                 <prop key="hibernate.dialect">${dataSource.dialect}</prop>
                 <prop key="hibernate.hbm2ddl.auto">${dataSource.hbm2ddl.auto}</prop>
-                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.format_sql">false</prop>
                 <!--&lt;!&ndash; 配置二级缓存 &ndash;&gt;
                 <prop key="hibernate.cache.use_second_level_cache">true</prop>

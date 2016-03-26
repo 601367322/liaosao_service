@@ -6,8 +6,10 @@ public class BaseDao<T> extends HibernateDaoSupport {
 
     public T save(T obj) throws Exception {
         try {
-            return (T) getHibernateTemplate().save(obj);
+            getHibernateTemplate().save(obj);
+            return obj;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("参数错误");
         }
     }
@@ -16,6 +18,7 @@ public class BaseDao<T> extends HibernateDaoSupport {
         try {
             getHibernateTemplate().saveOrUpdate(obj);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("参数错误");
         }
     }
@@ -24,6 +27,7 @@ public class BaseDao<T> extends HibernateDaoSupport {
         try {
             getHibernateTemplate().update(obj);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new Exception("参数错误");
         }
     }
@@ -32,6 +36,7 @@ public class BaseDao<T> extends HibernateDaoSupport {
         try {
             getHibernateTemplate().delete(obj);
         }catch (Exception e){
+            e.printStackTrace();
             throw new Exception("参数错误");
         }
     }
