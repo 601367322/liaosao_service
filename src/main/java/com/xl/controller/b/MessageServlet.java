@@ -374,6 +374,10 @@ public class MessageServlet {
             String dir = "/mnt/" + toId;
             String filename = file.getOriginalFilename();
             try {
+                File dirFile = new File(dir);
+                if (!dirFile.exists()) {
+                    dirFile.mkdirs();
+                }
                 FileUtils.writeByteArrayToFile(new File(dir, filename),
                         file.getBytes());
 

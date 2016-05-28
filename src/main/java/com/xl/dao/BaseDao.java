@@ -6,7 +6,8 @@ public class BaseDao<T> extends HibernateDaoSupport {
 
     public T save(T obj) throws Exception {
         try {
-            return (T) getHibernateTemplate().save(obj);
+            getHibernateTemplate().save(obj);
+            return obj;
         } catch (Exception e) {
             throw new Exception("参数错误");
         }
