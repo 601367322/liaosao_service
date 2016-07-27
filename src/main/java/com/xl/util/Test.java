@@ -21,7 +21,9 @@ public class Test {
                 for (int j = 0; j < child_files.length; j++) {
                     if (child_files[j].isFile()) {
                         File child = child_files[j];
-                        if (child.getName().length() < "1439655813814".length()) {
+                        if(child.getName().endsWith(".mp4")){
+
+                        }else if (child.getName().length() < "1439655813814".length()) {
                             if (getFileSizes(child) > 140 * 1024) {
                                 child.renameTo(new File(main_dir.getPath() + "\\" + child.getName() + ".mp4"));
                             } else {
