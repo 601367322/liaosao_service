@@ -136,7 +136,7 @@ public class ChatRoomServlet {
 
         JSONObject responseJson = new JSONObject();
         responseJson.put(StaticUtil.ORDER, StaticUtil.ORDER_CHATROOM_REQUEST);
-        responseJson.put(StaticUtil.CONTENT, request);
+        responseJson.put(StaticUtil.CONTENT, MyJSONUtil.getGson().toJson(request));
 
         session.writeAndFlush(responseJson.toString() + "\n");
 

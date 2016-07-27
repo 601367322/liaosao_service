@@ -83,6 +83,6 @@ public class MyJSONUtil {
     }
 
     public static Gson getGson() {
-        return new GsonBuilder().serializeNulls().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+        return new GsonBuilder().disableHtmlEscaping().serializeNulls().setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     }
 }

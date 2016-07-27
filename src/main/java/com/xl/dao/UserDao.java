@@ -23,7 +23,13 @@ public class UserDao extends BaseDao<UserTable> {
     @CacheEvict(value = "UserTable",key = "#obj.deviceId")
     @Override
     public UserTable save(UserTable obj) throws Exception {
-        return super.save(obj);
+        UserTable table = null;
+        try {
+            table = super.save(obj);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return table;
     }
     @CacheEvict(value = "UserTable",key = "#obj.deviceId")
     @Override
